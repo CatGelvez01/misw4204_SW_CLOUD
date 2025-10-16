@@ -45,6 +45,41 @@ class UserLogin(BaseModel):
         }
 
 
+class ErrorResponse(BaseModel):
+    """Schema for error response (400)."""
+
+    detail: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {"detail": "El correo electrónico ya está registrado."}
+        }
+
+
+class UnauthorizedResponse(BaseModel):
+    """Schema for unauthorized response (401)."""
+
+    detail: str
+
+    class Config:
+        json_schema_extra = {"example": {"detail": "Credenciales inválidas."}}
+
+
+class SignupResponse(BaseModel):
+    """Schema for signup response."""
+
+    message: str
+    user_id: int
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "message": "Usuario creado exitosamente.",
+                "user_id": 1,
+            }
+        }
+
+
 class TokenResponse(BaseModel):
     """Schema for token response."""
 
