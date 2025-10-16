@@ -34,6 +34,17 @@ class VideoResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "video_id": "123456",
+                "title": "Mi mejor tiro de 3",
+                "status": "processed",
+                "uploaded_at": "2025-03-10T14:30:00Z",
+                "processed_at": "2025-03-10T14:35:00Z",
+                "processed_url": "http://localhost:8080/processed/123456.mp4",
+                "votes": 0,
+            }
+        }
 
 
 class VideoDetailResponse(BaseModel):
@@ -50,6 +61,18 @@ class VideoDetailResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "video_id": "a1b2c3d4",
+                "title": "Tiros de tres en movimiento",
+                "status": "processed",
+                "uploaded_at": "2025-03-15T14:22:00Z",
+                "processed_at": "2025-03-15T15:10:00Z",
+                "original_url": "http://localhost:8080/uploads/a1b2c3d4.mp4",
+                "processed_url": "http://localhost:8080/processed/a1b2c3d4.mp4",
+                "votes": 125,
+            }
+        }
 
 
 class VideoDeleteResponse(BaseModel):
@@ -68,7 +91,7 @@ class VideoDeleteResponse(BaseModel):
 
 
 class VideoUploadResponse(BaseModel):
-    """Schema for video upload response."""
+    """Schema for successful video upload response."""
 
     message: str
     task_id: str
@@ -78,5 +101,70 @@ class VideoUploadResponse(BaseModel):
             "example": {
                 "message": "Video subido correctamente. Procesamiento en curso.",
                 "task_id": "abc123def456",
+            }
+        }
+
+
+class VideoUploadErrorResponse(BaseModel):
+    """Schema for video upload error response."""
+
+    detail: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "detail": "Solo se permiten archivos MP4.",
+            }
+        }
+
+
+class VideoErrorResponse(BaseModel):
+    """Schema for video operation error response."""
+
+    detail: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "detail": "El video no existe.",
+            }
+        }
+
+
+class VideoForbiddenResponse(BaseModel):
+    """Schema for forbidden video access response."""
+
+    detail: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "detail": "No tienes permiso para acceder a este video.",
+            }
+        }
+
+
+class VideoNotFoundResponse(BaseModel):
+    """Schema for video not found response."""
+
+    detail: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "detail": "El video no existe o no pertenece al usuario.",
+            }
+        }
+
+
+class VideoBadRequestResponse(BaseModel):
+    """Schema for video bad request response."""
+
+    detail: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "detail": "El video no puede ser eliminado porque no cumple las condiciones.",
             }
         }

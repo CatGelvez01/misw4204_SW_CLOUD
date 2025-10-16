@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from sqlalchemy.orm import Session
 import os
 import uuid
+import re
 from app.core.database import get_db
 from app.core.config import settings
 from app.models import User, Video, VideoStatus
@@ -14,6 +15,11 @@ from app.schemas import (
     VideoDetailResponse,
     VideoDeleteResponse,
     VideoUploadResponse,
+    VideoUploadErrorResponse,
+    VideoForbiddenResponse,
+    VideoNotFoundResponse,
+    VideoBadRequestResponse,
+    UnauthorizedResponse,
 )
 from app.api.dependencies import get_current_user
 from app.tasks.video_tasks import process_video_task
@@ -22,7 +28,17 @@ router = APIRouter()
 
 
 @router.post(
-    "/upload", status_code=status.HTTP_201_CREATED, response_model=VideoUploadResponse
+    "/upload",
+    status_code=status.HTTP_201_CREATED,
+    response_model=VideoUploadResponse,
+    responses={
+        400: {
+            "model": VideoUploadErrorResponse,
+            "description": "Invalid file format or title",
+        },
+        401: {"model": UnauthorizedResponse, "description": "Credenciales inválidas"},
+        413: {"model": VideoUploadErrorResponse, "description": "File too large"},
+    },
 )
 async def upload_video(
     video_file: UploadFile = File(...),
@@ -34,17 +50,24 @@ async def upload_video(
     Upload a video for processing.
 
     Args:
-        video_file: Video file to upload
-        title: Video title
+        video_file: MP4 video file (max 100MB)
+        title: Descriptive video title (1-255 characters)
         current_user: Current authenticated user
         db: Database session
 
     Returns:
-        dict: Success message and task ID
+        VideoUploadResponse: Success message and task ID
 
     Raises:
-        HTTPException: If file is invalid or too large
+        HTTPException: If file format is invalid, title contains invalid characters, or file is too large
     """
+    # Validate title (no special characters except spaces, hyphens, underscores)
+    if not re.match(r"^[a-zA-Z0-9\s\-_áéíóúñ]+$", title):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El título contiene caracteres no permitidos. Solo se permiten letras, números, espacios, guiones y guiones bajos.",
+        )
+
     # Validate file type
     if not video_file.filename.lower().endswith(".mp4"):
         raise HTTPException(
@@ -53,13 +76,12 @@ async def upload_video(
         )
 
     # Validate file size
-    file_size = 0
     content = await video_file.read()
     file_size = len(content)
 
     if file_size > settings.max_file_size:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail=f"El archivo excede el tamaño máximo de {settings.max_file_size / (1024 * 1024):.0f}MB.",
         )
 
@@ -97,7 +119,14 @@ async def upload_video(
     }
 
 
-@router.get("", response_model=list[VideoResponse])
+@router.get(
+    "",
+    response_model=list[VideoResponse],
+    responses={
+        200: {"description": "Lista de videos obtenida"},
+        401: {"model": UnauthorizedResponse, "description": "Falta de autenticación"},
+    },
+)
 async def list_my_videos(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -142,7 +171,25 @@ async def list_my_videos(
     return result
 
 
-@router.get("/{video_id}", response_model=VideoDetailResponse)
+@router.get(
+    "/{video_id}",
+    response_model=VideoDetailResponse,
+    responses={
+        200: {"description": "Consulta exitosa. Se devuelve el detalle del video"},
+        401: {
+            "model": UnauthorizedResponse,
+            "description": "El usuario no está autenticado o el token JWT es inválido o expirado",
+        },
+        403: {
+            "model": VideoForbiddenResponse,
+            "description": "El usuario autenticado no tiene permisos para acceder a este video",
+        },
+        404: {
+            "model": VideoNotFoundResponse,
+            "description": "El video no existe o no pertenece al usuario",
+        },
+    },
+)
 async def get_video_detail(
     video_id: str,
     current_user: User = Depends(get_current_user),
@@ -199,7 +246,29 @@ async def get_video_detail(
     }
 
 
-@router.delete("/{video_id}", response_model=VideoDeleteResponse)
+@router.delete(
+    "/{video_id}",
+    response_model=VideoDeleteResponse,
+    responses={
+        200: {"description": "El video ha sido eliminado correctamente"},
+        400: {
+            "model": VideoBadRequestResponse,
+            "description": "El video no puede ser eliminado porque no cumple las condiciones",
+        },
+        401: {
+            "model": UnauthorizedResponse,
+            "description": "El usuario no está autenticado o el token JWT es inválido o expirado",
+        },
+        403: {
+            "model": VideoForbiddenResponse,
+            "description": "El usuario autenticado no tiene permisos para eliminar este video",
+        },
+        404: {
+            "model": VideoNotFoundResponse,
+            "description": "El video no existe o no pertenece al usuario autenticado",
+        },
+    },
+)
 async def delete_video(
     video_id: str,
     current_user: User = Depends(get_current_user),
@@ -233,7 +302,12 @@ async def delete_video(
             detail="No tienes permiso para eliminar este video.",
         )
 
-    # TODO: Check if video is published for voting
+    # Check if video is published for voting (has votes)
+    if video.votes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No puedes eliminar un video que ya está habilitado para votación.",
+        )
 
     # Delete files
     if os.path.exists(video.original_path):
