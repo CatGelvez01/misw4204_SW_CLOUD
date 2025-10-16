@@ -12,13 +12,16 @@
 git clone <repository-url>
 cd anb-rising-stars
 
-# 2. Iniciar
+# 2. Copiar archivo de configuración
+cp .env.example .env
+
+# 3. Iniciar
 docker compose up -d
 
-# 3. Verificar
+# 4. Verificar
 docker compose ps
 
-# 4. Acceder
+# 5. Acceder
 # API: http://localhost:8000
 # Swagger: http://localhost:8000/docs
 ```

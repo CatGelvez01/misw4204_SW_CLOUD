@@ -51,6 +51,9 @@ Para empezar en 5 minutos, consulta [QUICKSTART.md](./QUICKSTART.md).
 git clone <repository-url>
 cd anb-rising-stars
 
+# Copiar archivo de configuración
+cp .env.example .env
+
 # Iniciar servicios
 docker compose up -d
 

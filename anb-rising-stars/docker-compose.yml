@@ -4,15 +4,15 @@ services:
     image: postgres:16-alpine
     container_name: anb_postgres
     environment:
-      POSTGRES_USER: ${DB_USER:-anb_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-anb_password}
-      POSTGRES_DB: ${DB_NAME:-anb_rising_stars}
+      POSTGRES_USER: anb_user
+      POSTGRES_PASSWORD: anb_password
+      POSTGRES_DB: anb_rising_stars
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-anb_user}"]
+      test: ["CMD-SHELL", "pg_isready -U anb_user -d anb_rising_stars"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -43,7 +43,7 @@ services:
     container_name: anb_backend
     command: python run.py
     environment:
-      DATABASE_URL: postgresql://${DB_USER:-anb_user}:${DB_PASSWORD:-anb_password}@postgres:5432/${DB_NAME:-anb_rising_stars}
+      DATABASE_URL: postgresql://anb_user:anb_password@postgres:5432/anb_rising_stars
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/1
       CELERY_RESULT_BACKEND: redis://redis:6379/2
@@ -72,7 +72,7 @@ services:
     container_name: anb_celery_worker
     command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4
     environment:
-      DATABASE_URL: postgresql://${DB_USER:-anb_user}:${DB_PASSWORD:-anb_password}@postgres:5432/${DB_NAME:-anb_rising_stars}
+      DATABASE_URL: postgresql://anb_user:anb_password@postgres:5432/anb_rising_stars
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/1
       CELERY_RESULT_BACKEND: redis://redis:6379/2
