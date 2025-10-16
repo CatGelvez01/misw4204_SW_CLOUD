@@ -33,7 +33,7 @@ app.include_router(videos.router, prefix="/api/videos", tags=["Videos"])
 # app.include_router(votes.router, prefix="/api/public", tags=["Voting"])
 
 
-@app.get("/", tags=["Health"])
+@app.get("/", tags=["Home"])
 async def root():
     return {
         "message": "ANB Rising Stars Showcase API",

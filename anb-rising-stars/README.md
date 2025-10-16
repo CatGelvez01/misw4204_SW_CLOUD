@@ -126,6 +126,7 @@ anb-rising-stars/
 │   ├── services/         # Lógica de negocio
 │   ├── tasks/            # Tareas Celery
 │   └── main.py           # App FastAPI
+├── collections/          # Colecciones de Postman
 ├── nginx/                # Configuración Nginx
 ├── tests/                # Tests unitarios
 ├── docs/                 # Documentación
@@ -140,6 +141,7 @@ anb-rising-stars/
 - **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Arquitectura del sistema
 - **[docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md)** - Guía de desarrollo
 - **[docs/API_ENDPOINTS.md](./docs/API_ENDPOINTS.md)** - Especificación de endpoints
+- **[collections/README.md](./collections/README.md)** - Colección de Postman para probar la API
 
 ## 🔧 Herramientas de Desarrollo
 
