@@ -135,10 +135,10 @@ celery -A app.tasks.celery_app worker --loglevel=info
 
 ## 📚 Más Información
 
-- **[README.md](./README.md)** - Descripción general
-- **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Arquitectura
-- **[docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md)** - Desarrollo
-- **[docs/API_ENDPOINTS.md](./docs/API_ENDPOINTS.md)** - Endpoints
+- **[README.md](/anb-rising-stars/README.md)** - Descripción general
+- **[docs/ARCHITECTURE.md](/anb-rising-stars/docs/ARCHITECTURE.md)** - Arquitectura
+- **[docs/DEVELOPMENT.md](/anb-rising-stars/docs/DEVELOPMENT.md)** - Desarrollo
+- **[docs/API_ENDPOINTS.md](/anb-rising-stars/docs/API_ENDPOINTS.md)** - Endpoints
 
 ---
 
