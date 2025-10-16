@@ -5,10 +5,13 @@ Video processing service.
 import os
 import logging
 import subprocess
+from pathlib import Path
 from app.core.config import settings
-from app.services.watermark_generator import create_intro_outro_clip
 
 logger = logging.getLogger(__name__)
+
+# Path to pre-generated intro video
+INTRO_VIDEO_PATH = Path(__file__).parent.parent.parent / "assets" / "anb_intro.mp4"
 
 
 class VideoProcessor:
@@ -23,7 +26,7 @@ class VideoProcessor:
 
     def process_video(self, input_path: str, video_id) -> str:
         """
-        Process a video: trim, adjust resolution, add intro/outro with ANB logo, remove audio.
+        Process a video: trim, adjust resolution, add intro with ANB logo, remove audio.
 
         Args:
             input_path: Path to the input video
@@ -39,23 +42,15 @@ class VideoProcessor:
             # Create output directory if it doesn't exist
             os.makedirs(settings.processed_dir, exist_ok=True)
 
-            # Step 1: Create intro/outro clips with ANB logo
-            logger.info(f"Creating intro/outro clips for video {video_id}")
-            intro_path = os.path.join(settings.processed_dir, f"{video_id}_intro.mp4")
-            outro_path = os.path.join(settings.processed_dir, f"{video_id}_outro.mp4")
+            # Step 1: Use pre-generated intro clip
+            logger.info(f"Using pre-generated intro clip for video {video_id}")
+            intro_path = str(INTRO_VIDEO_PATH)
 
-            create_intro_outro_clip(
-                duration=self.intro_outro_duration,
-                width=1280,
-                height=720,
-                output_path=intro_path,
-            )
-            create_intro_outro_clip(
-                duration=self.intro_outro_duration,
-                width=1280,
-                height=720,
-                output_path=outro_path,
-            )
+            if not os.path.exists(intro_path):
+                raise Exception(
+                    f"Intro video not found at {intro_path}. "
+                    "Please run: python scripts/generate_assets.py"
+                )
 
             # Step 2: Process main video (trim, scale, remove audio)
             logger.info(f"Processing main video content for video {video_id}")
@@ -70,12 +65,12 @@ class VideoProcessor:
                 "-t",
                 str(self.max_duration),  # Trim to max duration
                 "-vf",
-                "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2",  # 16:9 720p
+                "scale=854:480:force_original_aspect_ratio=decrease,pad=854:480:(ow-iw)/2:(oh-ih)/2",  # 16:9 480p (optimized)
                 "-an",  # Remove audio
                 "-c:v",
                 "libx264",
                 "-preset",
-                "medium",
+                "fast",
                 "-crf",
                 "23",
                 "-y",  # Overwrite output file
@@ -88,10 +83,8 @@ class VideoProcessor:
                 logger.error(f"FFmpeg error: {result.stderr}")
                 raise Exception(f"FFmpeg processing failed: {result.stderr}")
 
-            # Step 3: Concatenate intro + main video + outro
-            logger.info(
-                f"Concatenating intro, main video, and outro for video {video_id}"
-            )
+            # Step 3: Concatenate intro + main video
+            logger.info(f"Concatenating intro and main video for video {video_id}")
             concat_list_path = os.path.join(
                 settings.processed_dir, f"{video_id}_concat.txt"
             )
@@ -99,16 +92,14 @@ class VideoProcessor:
             # Use absolute paths in concat file
             intro_abs = os.path.abspath(intro_path)
             temp_abs = os.path.abspath(temp_video_path)
-            outro_abs = os.path.abspath(outro_path)
 
             with open(concat_list_path, "w") as f:
                 f.write(f"file '{intro_abs}'\n")
                 f.write(f"file '{temp_abs}'\n")
-                f.write(f"file '{outro_abs}'\n")
 
             output_path = os.path.join(settings.processed_dir, f"{video_id}.mp4")
 
-            # Use re-encoding instead of copy to handle different codecs
+            # Use copy codec since both files have same codec from encoding
             concat_cmd = [
                 "ffmpeg",
                 "-f",
@@ -117,14 +108,8 @@ class VideoProcessor:
                 "0",
                 "-i",
                 concat_list_path,
-                "-c:v",
-                "libx264",
-                "-preset",
-                "fast",
-                "-crf",
-                "23",
-                "-c:a",
-                "aac",
+                "-c",
+                "copy",
                 "-y",
                 output_path,
             ]
@@ -137,13 +122,8 @@ class VideoProcessor:
                 logger.error(f"FFmpeg concat error: {result.stderr}")
                 raise Exception(f"FFmpeg concatenation failed: {result.stderr}")
 
-            # Clean up temporary files
-            for temp_file in [
-                intro_path,
-                outro_path,
-                temp_video_path,
-                concat_list_path,
-            ]:
+            # Clean up temporary files (but NOT the intro video - it's static)
+            for temp_file in [temp_video_path, concat_list_path]:
                 if os.path.exists(temp_file):
                     os.remove(temp_file)
 

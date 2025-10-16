@@ -60,6 +60,7 @@ services:
       - .:/app
       - ./uploads:/app/uploads
       - ./processed:/app/processed
+      - ./assets:/app/assets
     networks:
       - anb_network
 
@@ -85,6 +86,7 @@ services:
       - .:/app
       - ./uploads:/app/uploads
       - ./processed:/app/processed
+      - ./assets:/app/assets
     networks:
       - anb_network
 
@@ -100,6 +102,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./uploads:/app/uploads:ro
       - ./processed:/app/processed:ro
+      - ./assets:/app/assets:ro
     depends_on:
       - backend
     networks:
