@@ -1,0 +1,115 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: anb_postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-anb_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-anb_password}
+      POSTGRES_DB: ${DB_NAME:-anb_rising_stars}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-anb_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - anb_network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: anb_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - anb_network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: anb_backend
+    command: python run.py
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-anb_user}:${DB_PASSWORD:-anb_password}@postgres:5432/${DB_NAME:-anb_rising_stars}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      DEBUG: ${DEBUG:-False}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - uploads:/app/uploads
+      - processed:/app/processed
+    networks:
+      - anb_network
+
+  # Celery Worker
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: anb_celery_worker
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-anb_user}:${DB_PASSWORD:-anb_password}@postgres:5432/${DB_NAME:-anb_rising_stars}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      DEBUG: ${DEBUG:-False}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    depends_on:
+      - postgres
+      - redis
+      - backend
+    volumes:
+      - .:/app
+      - uploads:/app/uploads
+      - processed:/app/processed
+    networks:
+      - anb_network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: anb_nginx
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - backend
+    networks:
+      - anb_network
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads:
+  processed:
+
+networks:
+  anb_network:
+    driver: bridge
+
