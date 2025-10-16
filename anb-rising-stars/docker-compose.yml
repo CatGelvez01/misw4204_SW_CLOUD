@@ -58,8 +58,8 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
-      - uploads:/app/uploads
-      - processed:/app/processed
+      - ./uploads:/app/uploads
+      - ./processed:/app/processed
     networks:
       - anb_network
 
@@ -83,8 +83,8 @@ services:
       - backend
     volumes:
       - .:/app
-      - uploads:/app/uploads
-      - processed:/app/processed
+      - ./uploads:/app/uploads
+      - ./processed:/app/processed
     networks:
       - anb_network
 
@@ -98,6 +98,8 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./uploads:/app/uploads:ro
+      - ./processed:/app/processed:ro
     depends_on:
       - backend
     networks:
@@ -106,10 +108,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  uploads:
-  processed:
 
 networks:
   anb_network:
     driver: bridge
-

@@ -13,6 +13,7 @@ from app.schemas.video import (
     VideoResponse,
     VideoDetailResponse,
     VideoDeleteResponse,
+    VideoUploadResponse,
 )
 from app.schemas.vote import VoteResponse, RankingEntry
 
@@ -27,6 +28,7 @@ __all__ = [
     "VideoResponse",
     "VideoDetailResponse",
     "VideoDeleteResponse",
+    "VideoUploadResponse",
     "VoteResponse",
     "RankingEntry",
 ]

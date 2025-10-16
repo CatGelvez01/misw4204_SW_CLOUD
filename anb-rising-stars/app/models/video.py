@@ -2,12 +2,13 @@
 Video model for database.
 """
 
-from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Enum
+from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Enum, Uuid
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from enum import Enum as PyEnum
 from app.core.database import Base
 from datetime import timezone
+import uuid
 
 
 class VideoStatus(str, PyEnum):
@@ -20,7 +21,7 @@ class VideoStatus(str, PyEnum):
 class Video(Base):
     __tablename__ = "videos"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Uuid, primary_key=True, default=uuid.uuid4, index=True)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     title = Column(String(255), nullable=False)
     status = Column(Enum(VideoStatus), default=VideoStatus.UPLOADED, nullable=False)

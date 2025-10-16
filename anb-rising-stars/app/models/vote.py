@@ -2,7 +2,7 @@
 Vote model for database.
 """
 
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, DateTime, ForeignKey, UniqueConstraint, Uuid
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from app.core.database import Base
@@ -13,7 +13,7 @@ class Vote(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     voter_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    video_id = Column(Integer, ForeignKey("videos.id"), nullable=False, index=True)
+    video_id = Column(Uuid, ForeignKey("videos.id"), nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
 
     # Unique constraint to ensure one vote per user per video

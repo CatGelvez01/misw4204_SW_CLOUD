@@ -17,6 +17,7 @@ pydantic-settings==2.1.0
 # Async Tasks
 celery==5.3.4
 redis==5.0.1
+kombu==5.3.4
 
 # Video Processing
 opencv-python==4.8.1.78

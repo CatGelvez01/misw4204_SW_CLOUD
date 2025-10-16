@@ -32,9 +32,9 @@ class Settings(BaseSettings):
     celery_broker_url: str = "redis://localhost:6379/1"
     celery_result_backend: str = "redis://localhost:6379/2"
 
-    # File Storage
-    upload_dir: str = "./uploads"
-    processed_dir: str = "./processed"
+    # File Storage - Use absolute paths
+    upload_dir: str = "/app/uploads"
+    processed_dir: str = "/app/processed"
     max_file_size: int = 104857600  # 100MB
     allowed_video_formats: List[str] = ["mp4"]
 
