@@ -19,7 +19,13 @@ from app.schemas.video import (
     VideoNotFoundResponse,
     VideoBadRequestResponse,
 )
-from app.schemas.vote import VoteResponse, RankingEntry
+from app.schemas.vote import (
+    VoteResponse,
+    RankingEntry,
+    VoteDuplicateResponse,
+    VoteNotFoundResponse,
+    RankingBadRequestResponse,
+)
 
 __all__ = [
     "UserRegister",
@@ -39,4 +45,7 @@ __all__ = [
     "VideoBadRequestResponse",
     "VoteResponse",
     "RankingEntry",
+    "VoteDuplicateResponse",
+    "VoteNotFoundResponse",
+    "RankingBadRequestResponse",
 ]

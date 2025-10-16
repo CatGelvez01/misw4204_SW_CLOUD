@@ -18,6 +18,45 @@ class VoteResponse(BaseModel):
         }
 
 
+class VoteDuplicateResponse(BaseModel):
+    """Schema for duplicate vote error response."""
+
+    detail: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "detail": "Ya has votado por este video.",
+            }
+        }
+
+
+class VoteNotFoundResponse(BaseModel):
+    """Schema for video not found in vote error response."""
+
+    detail: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "detail": "El video no existe.",
+            }
+        }
+
+
+class RankingBadRequestResponse(BaseModel):
+    """Schema for invalid ranking query parameter response."""
+
+    detail: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "detail": "Parámetro inválido en la consulta.",
+            }
+        }
+
+
 class RankingEntry(BaseModel):
     """Schema for ranking entry."""
 

@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import Base, engine
-from app.api import auth, videos  # , votes
+from app.api import auth, videos, votes
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -30,7 +30,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(videos.router, prefix="/api/videos", tags=["Videos"])
-# app.include_router(votes.router, prefix="/api/public", tags=["Voting"])
+app.include_router(votes.router, prefix="/api/public", tags=["Public"])
 
 
 @app.get("/", tags=["Home"])
@@ -40,9 +40,3 @@ async def root():
         "version": settings.app_version,
         "status": "running",
     }
-
-
-@app.get("/health", tags=["Health"])
-async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy"}

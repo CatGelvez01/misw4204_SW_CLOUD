@@ -164,9 +164,7 @@ def main():
     collection = build_postman_collection(openapi_schema)
 
     output_path = (
-        Path(__file__).parent.parent
-        / "collections"
-        / "ANB_Rising_Stars.postman_collection.json"
+        Path(__file__).parent.parent / "collections" / "postman_environment.json"
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
