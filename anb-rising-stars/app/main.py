@@ -2,14 +2,16 @@
 Main FastAPI application.
 """
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.api import auth, videos, votes
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+# Create database tables (skip during testing)
+if os.environ.get("TESTING") != "true":
+    Base.metadata.create_all(bind=engine)
 
 # Create FastAPI app
 app = FastAPI(
