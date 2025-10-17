@@ -106,7 +106,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unit-tests-results
           path: anb-rising-stars/tests/
@@ -115,7 +115,7 @@ jobs:
   api-tests:
     name: API Tests with Newman
     runs-on: ubuntu-latest
-    needs: unit-tests
+    needs: docker-validation
     defaults:
       run:
         working-directory: anb-rising-stars
@@ -160,7 +160,7 @@ jobs:
 
       - name: Upload API test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: api-tests-results
           path: anb-rising-stars/reports/
