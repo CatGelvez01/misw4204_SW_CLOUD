@@ -10,6 +10,9 @@ jobs:
   docker-validation:
     name: Docker Compose Validation
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: anb-rising-stars
 
     steps:
       - name: Checkout code
@@ -20,6 +23,7 @@ jobs:
 
       - name: Start services with Docker Compose
         run: docker compose up -d
+        working-directory: anb-rising-stars
 
       - name: Wait for services to be healthy
         run: |
@@ -76,6 +80,9 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     needs: docker-validation
+    defaults:
+      run:
+        working-directory: anb-rising-stars
 
     steps:
       - name: Checkout code
@@ -102,13 +109,16 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: unit-tests-results
-          path: tests/
+          path: anb-rising-stars/tests/
           retention-days: 7
 
   api-tests:
     name: API Tests with Newman
     runs-on: ubuntu-latest
     needs: unit-tests
+    defaults:
+      run:
+        working-directory: anb-rising-stars
 
     steps:
       - name: Checkout code
@@ -119,6 +129,7 @@ jobs:
 
       - name: Start services with Docker Compose
         run: docker compose up -d
+        working-directory: anb-rising-stars
 
       - name: Wait for FastAPI
         run: |
@@ -152,9 +163,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: api-tests-results
-          path: reports/
+          path: anb-rising-stars/reports/
           retention-days: 7
 
       - name: Cleanup
         if: always()
         run: docker compose down
+        working-directory: anb-rising-stars
