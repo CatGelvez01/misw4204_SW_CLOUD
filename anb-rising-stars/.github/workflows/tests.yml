@@ -1,0 +1,160 @@
+name: Tests Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  docker-validation:
+    name: Docker Compose Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Start services with Docker Compose
+        run: docker compose up -d
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for PostgreSQL..."
+          for i in {1..30}; do
+            if docker compose exec -T postgres pg_isready -U anb_user -d anb_rising_stars; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+            echo "Attempt $i/30 - waiting..."
+            sleep 2
+          done
+
+      - name: Wait for Redis
+        run: |
+          echo "Waiting for Redis..."
+          for i in {1..30}; do
+            if docker compose exec -T redis redis-cli ping | grep -q PONG; then
+              echo "Redis is ready"
+              break
+            fi
+            echo "Attempt $i/30 - waiting..."
+            sleep 2
+          done
+
+      - name: Wait for FastAPI
+        run: |
+          echo "Waiting for FastAPI..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/ | grep -q "ANB Rising Stars"; then
+              echo "FastAPI is ready"
+              break
+            fi
+            echo "Attempt $i/30 - waiting..."
+            sleep 2
+          done
+
+      - name: Verify all services
+        run: |
+          echo "=== PostgreSQL ==="
+          docker compose exec -T postgres pg_isready -U anb_user -d anb_rising_stars
+
+          echo "=== Redis ==="
+          docker compose exec -T redis redis-cli ping
+
+          echo "=== FastAPI ==="
+          curl -s http://localhost:8000/ | jq .
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: docker-validation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run unit tests
+        env:
+          TESTING: 'true'
+        run: python -m pytest tests/ -v --tb=short
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: unit-tests-results
+          path: tests/
+          retention-days: 7
+
+  api-tests:
+    name: API Tests with Newman
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Start services with Docker Compose
+        run: docker compose up -d
+
+      - name: Wait for FastAPI
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/ | grep -q "ANB Rising Stars"; then
+              echo "FastAPI is ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Newman
+        run: npm install
+
+      - name: Run API tests
+        run: |
+          mkdir -p reports
+          npx newman run collections/postman_environment.json \
+            --reporters cli,json \
+            --reporter-json-export reports/api-tests.json \
+            --timeout 10000
+
+      - name: Upload API test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-tests-results
+          path: reports/
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down
