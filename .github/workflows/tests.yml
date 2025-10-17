@@ -98,18 +98,12 @@ jobs:
             --reporter-json-export reports/api-tests.json \
             --timeout 10000
 
-          # Generate HTML report using newman's built-in reporter
-          npx newman run collections/postman_environment.json \
-            --reporters html \
-            --reporter-html-export reports/api-tests-report.html \
-            --timeout 10000 2>/dev/null || true
-
-      - name: Upload API test report
+      - name: Upload API test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: api-tests-report
-          path: anb-rising-stars/reports/
+          name: api-tests-results
+          path: anb-rising-stars/reports/api-tests.json
           retention-days: 7
 
       - name: Cleanup
