@@ -38,10 +38,6 @@ Plataforma web para descubrir talentos emergentes de baloncesto a través de vid
 - Python 3.11+ (para desarrollo local)
 - Git
 
-## 🚀 Inicio Rápido
-
-Para empezar en 5 minutos, consulta [QUICKSTART.md](./QUICKSTART.md).
-
 ## 📖 Instalación Completa
 
 ### Con Docker Compose (Recomendado)
@@ -132,16 +128,7 @@ anb-rising-stars/
 ├── docs/                 # Documentación
 ├── docker-compose.yml    # Orquestación
 ├── requirements.txt      # Dependencias
-└── QUICKSTART.md         # Guía rápida
 ```
-
-## 📚 Documentación
-
-- **[QUICKSTART.md](./QUICKSTART.md)** - Inicio rápido (5 minutos)
-- **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Arquitectura del sistema
-- **[docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md)** - Guía de desarrollo
-- **[docs/API_ENDPOINTS.md](./docs/API_ENDPOINTS.md)** - Especificación de endpoints
-- **[collections/README.md](./collections/README.md)** - Colección de Postman para probar la API
 
 ## 🔧 Herramientas de Desarrollo
 
