@@ -1,148 +1,46 @@
-# 🚀 Inicio Rápido - ANB Rising Stars Showcase
+# ANB Rising Stars Showcase - Entrega No. 1
 
-## ⚡ En 5 Minutos
+## Información del Equipo
 
-### Requisito
-- Docker y Docker Compose
-
-### Pasos
-
-```bash
-# 1. Clonar
-git clone <repository-url>
-cd anb-rising-stars
-
-# 2. Copiar archivo de configuración
-cp .env.example .env
-
-# 3. Iniciar
-docker compose up -d
-
-# 4. Verificar
-docker compose ps
-
-# 5. Acceder
-# API: http://localhost:8000
-# Swagger: http://localhost:8000/docs
-```
+| Nombre | Correo Uniandes |
+|--------|-----------------|
+| Integrante 1 | correo1@uniandes.edu.co |
+| Integrante 2 | correo2@uniandes.edu.co |
+| Integrante 3 | correo3@uniandes.edu.co |
+| Integrante 4 | correo4@uniandes.edu.co |
+| Integrante 5 | correo5@uniandes.edu.co |
 
 ---
 
-## 📝 Primeros Pasos con la API
+## Documentación de la Entrega
 
-### 1️⃣ Registrar Usuario
+Toda la documentación se encuentra en [/anb-rising-stars/docs/Entrega_1/](anb-rising-stars/docs/Entrega_1/).
 
-```bash
-curl -X POST http://localhost:8000/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "first_name": "Juan",
-    "last_name": "Pérez",
-    "email": "juan@example.com",
-    "password1": "Password123!",
-    "password2": "Password123!",
-    "city": "Bogotá",
-    "country": "Colombia"
-  }'
-```
+| Documento | Descripción |
+|-----------|-------------|
+| **[01_MODELO_DATOS.md](anb-rising-stars/docs/Entrega_1/01_MODELO_DATOS.md)** | Diagrama Entidad-Relación (ERD) y especificación detallada de entidades, atributos y relaciones |
+| **[02_ARQUITECTURA.md](anb-rising-stars/docs/Entrega_1/02_ARQUITECTURA.md)** | Diagramas C4, decisiones de diseño y patrones arquitectónicos |
+| **[03_DIAGRAMA_COMPONENTES.md](anb-rising-stars/docs/Entrega_1/03_DIAGRAMA_COMPONENTES.md)** | Representación de backend (FastAPI), worker (Celery), message broker (Redis/RabbitMQ) y base de datos (PostgreSQL) |
+| **[04_FLUJO_PROCESOS.md](anb-rising-stars/docs/Entrega_1/04_FLUJO_PROCESOS.md)** | Diagrama de flujo detallado de las etapas de carga, procesamiento y entrega de archivos |
+| **[05_API_ENDPOINTS.md](anb-rising-stars/docs/Entrega_1/05_API_ENDPOINTS.md)** | Contrato OpenAPI, especificación de endpoints, códigos HTTP, validación y manejo de errores |
+| **[06_DESPLIEGUE.md](anb-rising-stars/docs/Entrega_1/06_DESPLIEGUE.md)** | Infraestructura de ejecución, configuración Docker Compose y guía reproducible para replicar el entorno |
+| **[07_SONARQUBE.md](anb-rising-stars/docs/Entrega_1/07_SONARQUBE.md)** | Reporte de calidad: bugs, vulnerabilidades, code smells, cobertura de pruebas, duplicación de código y quality gate |
 
-**Respuesta:**
-```json
-{"message": "Usuario creado exitosamente.", "user_id": 1}
-```
-
-### 2️⃣ Iniciar Sesión
-
-```bash
-curl -X POST http://localhost:8000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "juan@example.com",
-    "password": "Password123!"
-  }'
-```
-
-**Respuesta:**
-```json
-{
-  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGci...",
-  "token_type": "Bearer",
-  "expires_in": 3600
-}
-```
-
-**Guardar el token para los siguientes requests.**
-
-### 3️⃣ Subir Video
-
-```bash
-curl -X POST http://localhost:8000/api/videos/upload \
-  -H "Authorization: Bearer <TOKEN>" \
-  -F "video_file=@video.mp4" \
-  -F "title=Mi mejor tiro de 3"
-```
-
-### 4️⃣ Ver Videos Públicos
-
-```bash
-curl http://localhost:8000/api/public/videos
-```
-
-### 5️⃣ Votar
-
-```bash
-curl -X POST http://localhost:8000/api/public/videos/1/vote \
-  -H "Authorization: Bearer <TOKEN>"
-```
-
-### 6️⃣ Ver Ranking
-
-```bash
-curl http://localhost:8000/api/public/rankings
-```
 
 ---
 
-## 💻 Desarrollo Local
+## Colecciones de Postman
 
-```bash
-# Crear entorno virtual
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Instalar dependencias
-pip install -r requirements.txt
-
-# Iniciar BD y cache
-docker compose up -d postgres redis
-
-# Terminal 1: Backend
-python run.py
-
-# Terminal 2: Worker Celery
-celery -A app.tasks.celery_app worker --loglevel=info
-```
+Las colecciones de Postman se encuentran en [/anb-rising-stars/collections/postman_environment.json](anb-rising-stars/collections/postman_environment.json) en formato JSON.
 
 ---
 
-## 🐛 Troubleshooting
+## Video de Sustentación
 
-| Problema | Solución |
-|----------|----------|
-| Servicios no inician | `docker compose logs` |
-| Reconstruir | `docker compose up -d --build` |
-| Limpiar todo | `docker compose down -v` |
-| Ver estado | `docker compose ps` |
+El enlace al video de sustentación se encuentra en [/anb-rising-stars/sustentacion/Entrega_1/video.mp4](anb-rising-stars/sustentacion/Entrega_1/video.mp4).
 
 ---
 
-## 📚 Más Información
+## Análisis de Capacidad
 
-- **[README.md](/anb-rising-stars/README.md)** - Descripción general
-- **[docs/ARCHITECTURE.md](/anb-rising-stars/docs/ARCHITECTURE.md)** - Arquitectura
-- **[docs/DEVELOPMENT.md](/anb-rising-stars/docs/DEVELOPMENT.md)** - Desarrollo
-- **[docs/API_ENDPOINTS.md](/anb-rising-stars/docs/API_ENDPOINTS.md)** - Endpoints
-
----
-
-**¡Listo!** 🎉 Accede a http://localhost:8000/docs para explorar la API.
+El plan de análisis de capacidad de la aplicación se encuentra en [/anb-rising-stars/capacity-planning/plan_de_pruebas.md](anb-rising-stars/capacity-planning/plan_de_pruebas.md). Este documento incluye el plan detallado de análisis de capacidad, los escenarios de carga planteados, las métricas seleccionadas, los resultados esperados y las recomendaciones para escalar la solución.
