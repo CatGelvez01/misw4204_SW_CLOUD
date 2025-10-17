@@ -63,17 +63,19 @@ class VideoProcessor:
                 "-i",
                 input_path,
                 "-t",
-                str(self.max_duration),  # Trim to max duration
+                str(self.max_duration),
                 "-vf",
-                "scale=854:480:force_original_aspect_ratio=decrease,pad=854:480:(ow-iw)/2:(oh-ih)/2",  # 16:9 480p (optimized)
-                "-an",  # Remove audio
+                "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2",
+                "-an",
                 "-c:v",
                 "libx264",
                 "-preset",
                 "fast",
                 "-crf",
                 "23",
-                "-y",  # Overwrite output file
+                "-pix_fmt",
+                "yuv420p",
+                "-y",
                 temp_video_path,
             ]
 
@@ -85,21 +87,18 @@ class VideoProcessor:
 
             # Step 3: Concatenate intro + main video
             logger.info(f"Concatenating intro and main video for video {video_id}")
+
+            output_path = os.path.join(settings.processed_dir, f"{video_id}.mp4")
             concat_list_path = os.path.join(
                 settings.processed_dir, f"{video_id}_concat.txt"
             )
 
-            # Use absolute paths in concat file
-            intro_abs = os.path.abspath(intro_path)
-            temp_abs = os.path.abspath(temp_video_path)
-
+            # Create concat file
             with open(concat_list_path, "w") as f:
-                f.write(f"file '{intro_abs}'\n")
-                f.write(f"file '{temp_abs}'\n")
+                f.write(f"file '{intro_path}'\n")
+                f.write(f"file '{temp_video_path}'\n")
 
-            output_path = os.path.join(settings.processed_dir, f"{video_id}.mp4")
-
-            # Use copy codec since both files have same codec from encoding
+            # Concatenate using concat demuxer
             concat_cmd = [
                 "ffmpeg",
                 "-f",
@@ -122,10 +121,13 @@ class VideoProcessor:
                 logger.error(f"FFmpeg concat error: {result.stderr}")
                 raise Exception(f"FFmpeg concatenation failed: {result.stderr}")
 
+            # Clean up concat file
+            if os.path.exists(concat_list_path):
+                os.remove(concat_list_path)
+
             # Clean up temporary files (but NOT the intro video - it's static)
-            for temp_file in [temp_video_path, concat_list_path]:
-                if os.path.exists(temp_file):
-                    os.remove(temp_file)
+            if os.path.exists(temp_video_path):
+                os.remove(temp_video_path)
 
             logger.info(f"Video {video_id} processed successfully: {output_path}")
             return output_path

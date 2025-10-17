@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     # Video Processing
     video_min_duration: int = 20  # seconds
     video_max_duration: int = 60  # seconds
-    video_processed_max_duration: int = 30  # seconds
+    video_processed_max_duration: int = 19  # seconds
     video_output_resolution: str = "720p"
     video_aspect_ratio: str = "16:9"
     video_intro_outro_duration: int = 5  # seconds
