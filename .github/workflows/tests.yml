@@ -7,63 +7,9 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  setup-services:
-    name: Setup Docker Services
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: anb-rising-stars
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Start services with Docker Compose
-        run: docker compose up -d
-
-      - name: Wait for PostgreSQL
-        run: |
-          for i in {1..30}; do
-            if docker compose exec -T postgres pg_isready -U anb_user -d anb_rising_stars; then
-              echo "PostgreSQL is ready"
-              break
-            fi
-            sleep 2
-          done
-
-      - name: Wait for Redis
-        run: |
-          for i in {1..30}; do
-            if docker compose exec -T redis redis-cli ping | grep -q PONG; then
-              echo "Redis is ready"
-              break
-            fi
-            sleep 2
-          done
-
-      - name: Wait for FastAPI
-        run: |
-          for i in {1..30}; do
-            if curl -s http://localhost:8000/ | grep -q "ANB Rising Stars"; then
-              echo "FastAPI is ready"
-              break
-            fi
-            sleep 2
-          done
-
-      - name: Verify services
-        run: |
-          echo "✅ PostgreSQL: $(docker compose exec -T postgres pg_isready -U anb_user -d anb_rising_stars)"
-          echo "✅ Redis: $(docker compose exec -T redis redis-cli ping)"
-          echo "✅ FastAPI: $(curl -s http://localhost:8000/ | jq -r '.message')"
-
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    needs: setup-services
     defaults:
       run:
         working-directory: anb-rising-stars
@@ -99,14 +45,63 @@ jobs:
   api-tests:
     name: API Tests with Newman
     runs-on: ubuntu-latest
-    needs: setup-services
     defaults:
       run:
         working-directory: anb-rising-stars
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: anb_user
+          POSTGRES_PASSWORD: anb_password
+          POSTGRES_DB: anb_rising_stars
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start FastAPI
+        run: |
+          python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+
+      - name: Wait for FastAPI
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/ | grep -q "ANB Rising Stars"; then
+              echo "FastAPI is ready"
+              break
+            fi
+            sleep 2
+          done
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
