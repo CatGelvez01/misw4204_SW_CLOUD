@@ -1,0 +1,22 @@
+{
+  "name": "anb-rising-stars-api",
+  "version": "1.0.0",
+  "description": "ANB Rising Stars Showcase API - Basketball video showcase application",
+  "scripts": {
+    "test:api": "newman run collections/postman_environment.json --reporters cli,html --reporter-html-export reports/api-tests.html",
+    "test:api:json": "newman run collections/postman_environment.json --reporters json --reporter-json-export reports/api-tests.json",
+    "test:api:junit": "newman run collections/postman_environment.json --reporters junit --reporter-junit-export reports/api-tests.xml"
+  },
+  "keywords": [
+    "fastapi",
+    "api",
+    "basketball",
+    "video",
+    "showcase"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "newman": "^6.1.0"
+  }
+}
