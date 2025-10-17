@@ -94,10 +94,15 @@ jobs:
         run: |
           mkdir -p reports
           npx newman run collections/postman_environment.json \
-            --reporters cli,json,html \
+            --reporters cli,json \
             --reporter-json-export reports/api-tests.json \
-            --reporter-html-export reports/api-tests.html \
             --timeout 10000
+
+          # Generate HTML report using newman's built-in reporter
+          npx newman run collections/postman_environment.json \
+            --reporters html \
+            --reporter-html-export reports/api-tests-report.html \
+            --timeout 10000 2>/dev/null || true
 
       - name: Upload API test report
         if: always()
