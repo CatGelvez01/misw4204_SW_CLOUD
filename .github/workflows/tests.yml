@@ -65,17 +65,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         env:
           TESTING: 'true'
-        run: python -m pytest tests/ -v --tb=short
+        run: |
+          pip install pytest-cov coverage
+          python -m pytest tests/ -v --tb=short --cov=app --cov-report=html --cov-report=term
 
-      - name: Upload unit test results
+      - name: Upload unit test coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-tests-results
-          path: anb-rising-stars/tests/
+          name: unit-tests-coverage
+          path: anb-rising-stars/htmlcov/
           retention-days: 7
 
       - name: Set up Node.js
@@ -92,15 +94,16 @@ jobs:
         run: |
           mkdir -p reports
           npx newman run collections/postman_environment.json \
-            --reporters cli,json \
+            --reporters cli,json,html \
             --reporter-json-export reports/api-tests.json \
+            --reporter-html-export reports/api-tests.html \
             --timeout 10000
 
-      - name: Upload API test results
+      - name: Upload API test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: api-tests-results
+          name: api-tests-report
           path: anb-rising-stars/reports/
           retention-days: 7
 
