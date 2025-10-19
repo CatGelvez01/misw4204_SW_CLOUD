@@ -41,6 +41,35 @@ El enlace al video de sustentación se encuentra en [/anb-rising-stars/sustentac
 
 ---
 
+# Proyecto ANB Rising Stars
+
+Este proyecto forma parte del curso **MISW4204 - Software en la Nube**, e implementa una aplicación web basada en arquitectura de microservicios, contenedores y base de datos SQL. Incluye API REST con autenticación, procesamiento asíncrono con Celery y despliegue con Docker Compose.
+
+---
+
+## 📦 Requerimientos del Sistema
+
+- **Python:** 3.10 o superior  
+- **SQL Database:** PostgreSQL 14 o superior  
+- **Docker:** 24+  
+- **Docker Compose:** 2.20+  
+
+---
+
+## 🧰 Instalación de dependencias
+
+Antes de ejecutar el proyecto, crea un entorno virtual e instala los requerimientos.
+
+```bash
+# Crear entorno virtual
+python3 -m venv venv
+source venv/bin/activate   # En Linux/Mac
+venv\Scripts\activate      # En Windows
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+
 ## Análisis de Capacidad
 
 El plan de análisis de capacidad de la aplicación se encuentra en [/anb-rising-stars/capacity-planning/plan_de_pruebas.md](anb-rising-stars/capacity-planning/plan_de_pruebas.md). Este documento incluye el plan detallado de análisis de capacidad, los escenarios de carga planteados, las métricas seleccionadas, los resultados esperados y las recomendaciones para escalar la solución.
