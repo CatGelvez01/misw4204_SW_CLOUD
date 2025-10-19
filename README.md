@@ -69,6 +69,25 @@ venv\Scripts\activate      # En Windows
 # Instalar dependencias
 pip install -r requirements.txt
 
+----
+anb-rising-stars/
+│
+├── app/
+│   ├── api/
+│   │   ├── auth.py
+│   │   ├── videos.py
+│   │   └── votes.py
+│   ├── core/
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   └── security.py
+│   └── main.py
+│
+├── celery_worker.py
+├── docker-compose.yml
+├── requirements.txt
+├── run.py
+└── pytest.ini
 
 ## Análisis de Capacidad
 
