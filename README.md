@@ -37,7 +37,7 @@ Las colecciones de Postman se encuentran en [/anb-rising-stars/collections/postm
 
 ## Video de Sustentación
 
-El enlace al video de sustentación se encuentra en [/anb-rising-stars/sustentacion/Entrega_1/video.mp4](anb-rising-stars/sustentacion/Entrega_1/video.mp4).
+El enlace al video de sustentación se encuentra en [/anb-rising-stars/sustentacion/Entrega_1/archivo.md](anb-rising-stars/sustentacion/Entrega_1/archivo.md) o puede accederse directamente haciendo click [aquí](https://youtu.be/U4WfAXbxG4Y).
 
 ---
 
