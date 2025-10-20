@@ -1,3 +1,168 @@
+# MISW – 4204 Desarrollo de Software en la Nube  
+**Grupo 15**  
+
+## Análisis de Capacidad
+
+---
+
+### Escenario 1 – Capacidad de la Capa Web (Usuarios Concurrentes)
+
+En este escenario se evaluó la **capacidad de respuesta de la capa Web**, midiendo el comportamiento del sistema ante diferentes volúmenes de usuarios concurrentes.  
+Para ello, se **desacopló la capa worker** de la API, evitando procesos de autenticación y preprocesamiento asíncrono con el fin de aislar el rendimiento puro del servicio web.
+
+---
+
+### Modificaciones Implementadas
+
+Se realizaron ajustes en la arquitectura para separar el worker de procesamiento de la API principal, permitiendo que las peticiones HTTP se atiendan directamente sin encolado ni autenticación adicional.
+<img width="787" height="647" alt="image" src="https://github.com/user-attachments/assets/fe5fd092-a3a1-4985-8ec3-3fcb8f679a02" />
+
+**Figura 1.** Modificaciones para desacoplar la capa worker  
+*(Referencia visual de la arquitectura ajustada para pruebas de carga)*
+
+---
+
+### Diseño de la Prueba
+
+Se desarrolló un **script en Apache JMeter** con el objetivo de evaluar:
+
+- Cantidad de **peticiones por segundo (RPS)**  
+- **Porcentaje de error** (% Error)  
+- **Tiempo de respuesta medio** (ms)  
+- **Rendimiento total** bajo carga progresiva  
+
+El plan de prueba incluye validaciones iniciales de sanidad del sistema antes de aplicar carga masiva, asegurando la correcta disponibilidad del endpoint y la respuesta esperada.
+<img width="1176" height="302" alt="image" src="https://github.com/user-attachments/assets/b41b5282-9e3a-4070-9538-fbf73ccc5149" />
+
+**Figura 2.** Creación y configuración del test plan en JMeter  
+*(Se valida el estado del sistema y la sanidad del endpoint antes del escalamiento)*
+
+---
+
+### Resultados de la Prueba de Sanidad
+
+- **% de error:** 0 %  
+- **Media de respuesta:** 52 ms  
+- **Interpretación:** Todas las peticiones fueron exitosas y el sistema respondió de forma inmediata, confirmando que el entorno se encontraba operativo antes de iniciar las pruebas de carga.
+<img width="1182" height="173" alt="image" src="https://github.com/user-attachments/assets/925afb8b-78fc-4124-9f4c-4366ae0de505" />
+
+**Figura 3.** Resultados de la prueba de sanidad (sin errores, respuesta estable)
+
+---
+
+## Pruebas de Escalamiento Rápido
+
+El escalamiento rápido se aplicó de manera incremental, aumentando el número de **usuarios concurrentes** durante un período de **3 minutos** para cada iteración.  
+Cada ejecución cuenta con su respectiva captura de resultados obtenidos en JMeter.
+
+---
+
+### 1. Escenario con 100 usuarios (3 minutos)
+
+Prueba inicial de carga baja para validar estabilidad del endpoint bajo concurrencia moderada.  
+El sistema mantiene tiempos de respuesta constantes y sin errores.  
+<img width="1185" height="171" alt="image" src="https://github.com/user-attachments/assets/e5cf3649-7540-4b04-8c55-b35db0aaab95" />
+
+**Figura 4.** Resultado JMeter – 100 usuarios
+
+---
+
+### 2. Escenario con 300 usuarios (3 minutos)
+
+Aumento gradual de carga.  
+Se mantiene un desempeño estable, con leve incremento en la media de respuesta pero sin errores reportados.  
+<img width="1177" height="177" alt="image" src="https://github.com/user-attachments/assets/29aee487-f5aa-45e5-8a02-378a96172fac" />
+
+
+**Figura 5.** Resultado JMeter – 300 usuarios
+
+---
+
+### 3. Escenario con 500 usuarios (3 minutos)
+
+Carga media.  
+El tiempo de respuesta promedio aumenta ligeramente, aunque todas las peticiones son exitosas.  
+<img width="1178" height="203" alt="image" src="https://github.com/user-attachments/assets/0e51d503-a569-4d39-8704-a17a87bf51a9" />
+
+**Figura 6.** Resultado JMeter – 500 usuarios
+
+---
+
+### 4. Escenario con 1000 usuarios (3 minutos)
+
+Escenario de carga alta.  
+El sistema mantiene su disponibilidad sin fallas, aunque el tiempo de respuesta se eleva proporcionalmente.  
+<img width="1178" height="203" alt="image" src="https://github.com/user-attachments/assets/915d920c-8f08-4ba3-a1cd-adf041353f60" />
+
+**Figura 7.** Resultado JMeter – 1000 usuarios
+
+---
+
+### 5. Escenario con 1500 usuarios (3 minutos)
+
+Se comienza a evidenciar **una ligera degradación del rendimiento**, pero el sistema sigue respondiendo sin errores críticos.  
+<img width="1177" height="182" alt="image" src="https://github.com/user-attachments/assets/b24031b7-907f-4fde-bae3-c154e934dd9b" />
+
+**Figura 8.** Resultado JMeter – 1500 usuarios
+
+---
+
+### 6. Escenario con 3000 usuarios (3 minutos)
+
+El sistema alcanza su primer punto de **saturación perceptible**.  
+El tiempo medio de respuesta se incrementa notablemente y aparecen algunos retrasos en la cola de peticiones.  
+<img width="1180" height="171" alt="image" src="https://github.com/user-attachments/assets/151afe8e-625f-46ee-8ab1-c884f87f6eff" />
+
+**Figura 9.** Resultado JMeter – 3000 usuarios
+
+---
+
+### 7. Escenario con 5000 usuarios (3 minutos)
+
+Carga muy alta.  
+Se registran tiempos de respuesta elevados y algunas peticiones comienzan a exceder el umbral de tolerancia configurado en JMeter.  
+<img width="1178" height="176" alt="image" src="https://github.com/user-attachments/assets/65a6a132-7167-4435-8f6a-b3f168bfc5a7" />
+
+**Figura 10.** Resultado JMeter – 5000 usuarios
+
+---
+
+### 8. Escenario con 8000 usuarios (3 minutos)
+
+Escenario máximo de carga.  
+El sistema muestra **respuestas intermitentes**, con tiempos variables y evidencia de saturación total de recursos de CPU en la capa Web.  
+<img width="1183" height="172" alt="image" src="https://github.com/user-attachments/assets/36730045-3de3-471d-958e-53882757ebc5" />
+
+**Figura 11.** Resultado JMeter – 8000 usuarios
+
+
+
+---
+
+## Observaciones Generales
+
+- El sistema **mantiene estabilidad** hasta aproximadamente **1500 usuarios concurrentes**.  
+- A partir de **3000 usuarios**, el **tiempo medio de respuesta** aumenta de forma considerable.  
+- En **5000 usuarios o más**, comienzan a presentarse **timeouts y degradación visible del rendimiento**.  
+- No se detectaron **fallos críticos** ni reinicios de contenedores durante las pruebas.  
+- El entorno soporta de forma óptima entre **1000–1500 usuarios concurrentes**, siendo necesario **escalar horizontalmente** para cargas superiores.
+
+---
+
+## Conclusiones
+
+El análisis de capacidad demuestra que la **capa Web** de la aplicación ANB Rising Stars Showcase responde adecuadamente bajo cargas moderadas.  
+La respuesta se mantiene estable hasta 1500 usuarios concurrentes, con una media de **52–180 ms** dependiendo del nivel de carga.  
+
+**Recomendaciones:**
+1. Implementar **balanceo de carga (Nginx, HAProxy o AWS ELB)**.  
+2. Desplegar **réplicas adicionales del backend** para manejar más sesiones simultáneas.  
+3. Activar **caché HTTP** para endpoints estáticos o de lectura frecuente.  
+4. Ajustar **parámetros de concurrencia de Uvicorn/Gunicorn** para mejorar la distribución de carga.  
+
+Con estas optimizaciones, el sistema puede escalar progresivamente y mantener una experiencia de usuario fluida incluso en escenarios de alta concurrencia.
+
+
 # Plan B – Análisis de Capacidad
 
 Este documento presenta el **Plan B** del proyecto **ANB Rising Stars Showcase**, enfocado en evaluar la capacidad y rendimiento de la aplicación desplegada en un entorno **dockerizado local**.  
@@ -145,3 +310,4 @@ El monitoreo por `docker stats` reflejó:
 El sistema demuestra **buena capacidad y estabilidad** para procesamiento concurrente de tareas multimedia.  
 La arquitectura basada en **FastAPI + Celery + Redis + PostgreSQL** responde adecuadamente bajo escenarios de alta demanda, manteniendo el aislamiento entre servicios y la recuperación automática de tareas fallidas.  
 Para cargas mayores (**100+ tareas simultáneas** o archivos **>100 MB**), se recomienda **aumentar la concurrencia** de Celery a 4 o **añadir un segundo nodo worker**, optimizando así el **throughput total del sistema**.
+
