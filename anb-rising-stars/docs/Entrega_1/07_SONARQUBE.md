@@ -1,12 +1,7 @@
 # Reporte de Análisis de SonarQube - ANB Rising Stars Showcase
 
-## Estado Actual
-
-**Nota**: El análisis de SonarQube aún no ha sido implementado en esta entrega.
-
-Este documento será completado en futuras entregas del proyecto con los siguientes componentes:
-
 ---
+<img width="1467" height="441" alt="image" src="https://github.com/user-attachments/assets/0b8cc167-2ad2-4469-af42-4beca79cf474" />
 
 ## Contenido Esperado
 
@@ -44,6 +39,9 @@ Duplicaciones Relacionadas con Seguridad	0.8%	No se detectan fragmentos de códi
 
 ### 2. Cobertura de Pruebas
 
+<img width="371" height="124" alt="image" src="https://github.com/user-attachments/assets/ec27a6c6-5553-4cbe-a76a-27103da7ce14" />
+
+
 - **Cobertura General**: Porcentaje de código cubierto por pruebas unitarias
 Porcentaje total: 61.4%
 El análisis indica que más del 60% del código fuente está cubierto por pruebas unitarias o de integración.
@@ -67,11 +65,15 @@ Líneas sin cobertura: ~772
 
 ### 3. Estado del Quality Gate
 
+<img width="373" height="142" alt="image" src="https://github.com/user-attachments/assets/9aa731c7-72f6-41bf-8912-1128f51ea9c8" />
+
 - **Aprobado/Rechazado**: Estado general del proyecto
 Aprobado / Rechazado
 
 Estado General del Proyecto: ✅ Aprobado (Passed)
 El proyecto misw4204_SW_CLOUD cumple con los umbrales de calidad establecidos en el Quality Gate de SonarQube Cloud, lo que significa que no existen vulnerabilidades críticas, errores bloqueantes ni deuda técnica significativa.
+
+<img width="364" height="253" alt="image" src="https://github.com/user-attachments/assets/67b25a38-bd50-41db-9fb1-483ac80d2dd3" />
 
 - **Condiciones**: Criterios evaluados
 Condiciones Evaluadas
@@ -90,8 +92,19 @@ Reliability Rating	B	C	🔻 Leve descenso por nuevos bugs
 Security Rating	D	E	🔻 Mayor número de vulnerabilidades detectadas
 Maintainability Rating	A	A	➡️ Estable
 Duplicación de código	1.2%	0.8%	🔼 Mejora
+
+<img width="372" height="270" alt="image" src="https://github.com/user-attachments/assets/581b8c35-5a6e-43df-ad4e-225e0a0d0951" />
+
+
 Cobertura de pruebas	58%	61.4%	🔼 Mejora
+
+<img width="376" height="273" alt="image" src="https://github.com/user-attachments/assets/6b961d01-d22c-4961-90cf-f14e1f3af2e8" />
+
+
 Quality Gate	Passed	Passed	✅ Estable
+
+<img width="377" height="503" alt="image" src="https://github.com/user-attachments/assets/7098701e-577e-4565-9036-7321f267cafb" />
+
 
 ### 4. Detalles de Hallazgos
 
