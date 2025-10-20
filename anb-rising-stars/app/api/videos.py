@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 import os
-import uuid
+from uuid import uuid4
 import re
 from app.core.database import get_db
 from app.core.config import settings
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 @router.post(
     "/upload",
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_202_ACCEPTED,
     response_model=VideoUploadResponse,
     responses={
         400: {
@@ -45,106 +45,28 @@ logger = logging.getLogger(__name__)
         413: {"model": VideoUploadErrorResponse, "description": "File too large"},
     },
 )
-async def upload_video(
-    video_file: UploadFile = File(...),
+async def upload_video_mock(
+    file: UploadFile = File(...),
     title: str = Form(...),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
     """
-    Upload a video for processing.
-
-    Args:
-        video_file: MP4 video file (max 100MB)
-        title: Descriptive video title (1-255 characters)
-        current_user: Current authenticated user
-        db: Database session
-
-    Returns:
-        VideoUploadResponse: Success message and task ID
-
-    Raises:
-        HTTPException: If file format is invalid, title contains invalid characters, or file is too large
+    Mock endpoint: acepta el video pero no ejecuta preprocesamiento.
+    Solo responde inmediatamente (para pruebas de carga o staging).
     """
-    # Validate title (no special characters except spaces, hyphens, underscores)
-    if not re.match(r"^[a-zA-Z0-9\s\-_áéíóúñ]+$", title):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El título contiene caracteres no permitidos. Solo se permiten letras, números, espacios, guiones y guiones bajos.",
-        )
 
-    # Validate file type
-    if not video_file.filename.lower().endswith(".mp4"):
+    if not file.filename.lower().endswith(".mp4"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Solo se permiten archivos MP4.",
         )
 
-    # Validate file size
-    content = await video_file.read()
-    file_size = len(content)
+    task_id = str(uuid4())
 
-    if file_size > settings.max_file_size:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"El archivo excede el tamaño máximo de {settings.max_file_size / (1024 * 1024):.0f}MB.",
-        )
-
-    # Generate unique file ID
-    file_id = str(uuid.uuid4())
-
-    # Upload to S3 or local storage
-    if settings.use_s3:
-        try:
-            s3_storage = S3Storage()
-            s3_key = s3_storage.upload_video(
-                content, file_id, prefix=settings.s3_original_prefix
-            )
-            file_path = s3_key
-        except Exception as e:
-            logger.error(f"S3 upload error: {str(e)}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error al guardar el video en S3.",
-            )
-    else:
-        # Local storage fallback
-        os.makedirs(settings.upload_dir, exist_ok=True)
-        file_path = os.path.join(settings.upload_dir, f"{file_id}.mp4")
-        with open(file_path, "wb") as f:
-            f.write(content)
-        os.chmod(file_path, 0o666)
-
-    # Create video record
-    video = Video(
-        owner_id=current_user.id,
-        title=title,
-        status=VideoStatus.UPLOADED,
-        original_filename=video_file.filename,
-        original_path=file_path,
-        task_id=file_id,
+    
+    return VideoUploadResponse(
+        message="Video subido correctamente. Procesamiento simulado.",
+        task_id=task_id,
     )
-
-    try:
-        db.add(video)
-        db.commit()
-        db.refresh(video)
-    except SQLAlchemyError as e:
-        db.rollback()
-        logger.error(f"Database error during video upload: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al guardar el video. Por favor intenta de nuevo.",
-        )
-
-    # Enqueue processing task to Celery
-    task = process_video_task.delay(video.id)
-
-    return {
-        "message": "Video subido correctamente. Procesamiento en curso.",
-        "task_id": task.id,
-    }
-
 
 @router.get(
     "",
