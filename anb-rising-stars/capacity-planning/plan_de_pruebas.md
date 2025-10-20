@@ -130,7 +130,7 @@ Se registran tiempos de respuesta elevados y algunas peticiones comienzan a exce
 ### 8. Escenario con 8000 usuarios (3 minutos)
 
 Escenario máximo de carga.  
-El sistema muestra **respuestas intermitentes**, con tiempos variables y evidencia de saturación total de recursos de CPU en la capa Web.  
+El sistema muestra **respuestas intermitentes**, con tiempos variables y evidencia de saturación total de recursos de CPU en la capa Web.  Adicionalmente, presenta un **1.84 % de errores** debido a timeouts y fallos en la conexión.
 <img width="1183" height="172" alt="image" src="https://github.com/user-attachments/assets/36730045-3de3-471d-958e-53882757ebc5" />
 
 **Figura 11.** Resultado JMeter – 8000 usuarios
@@ -138,6 +138,24 @@ El sistema muestra **respuestas intermitentes**, con tiempos variables y evidenc
 
 
 ---
+
+--- 
+
+### Análisis de Resultados
+
+Los resultados obtenidos durante las pruebas de carga revelan información valiosa sobre el comportamiento del sistema bajo diferentes niveles de estrés. A continuación, se detallan los hallazgos más relevantes:
+
+|Número de Usuarios|Tiempo de Respuesta Promedio|% Error| Rendimiento (RPS)|
+|------------------|----------------------------|-------|------------------|
+|100               |33 ms                       |0 %    |2022/sec               |
+|300               |33 ms                       |0 %    |1.7/sec               |
+|500               |30 ms                       |0 %    |2.8/sec              |
+|1000              |34 ms                       |0 %    |5.6/sec              |
+|3000             |427 ms                      |0 %    |16.7/sec             |
+|5000              |7391 ms                     |0 %  |27.6/sec            |
+|8000              |57542 ms                    |1.84 %  |29.8/sec            |
+
+
 
 ## Observaciones Generales
 
