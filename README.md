@@ -6,9 +6,9 @@
 |--------|-----------------|
 | Cristian F. Rubio A.| c.rubioa@uniandes.edu.co |
 | Anderson Arevalo Mendoza | a.arevalom@uniandes.edu.co |
-| Wilson Stiven Cardenas | w.cardenasq@uniandes.edu.co |
+| Wilson Stevens Cardenas | w.cardenasq@uniandes.edu.co |
 | Ana Catalina Gelvez | ac.gelvez1783@uniandes.edu.co |
-| Damiel Sierra Rincón | dani-sie@uniandes.edu.co |
+| Daniel Sierra Rincón | dani-sie@uniandes.edu.co |
 
 ---
 
