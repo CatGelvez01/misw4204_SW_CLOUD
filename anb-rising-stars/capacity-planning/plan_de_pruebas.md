@@ -151,6 +151,7 @@ Los resultados obtenidos durante las pruebas de carga revelan información valio
 |300               |33 ms                       |0 %    |1.7/sec               |
 |500               |30 ms                       |0 %    |2.8/sec              |
 |1000              |34 ms                       |0 %    |5.6/sec              |
+|1500              |32 ms                      |0 %    |8.3/sec              |
 |3000             |427 ms                      |0 %    |16.7/sec             |
 |5000              |7391 ms                     |0 %  |27.6/sec            |
 |8000              |57542 ms                    |1.84 %  |29.8/sec            |
