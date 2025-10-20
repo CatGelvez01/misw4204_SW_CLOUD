@@ -4,11 +4,11 @@
 
 | Nombre | Correo Uniandes |
 |--------|-----------------|
-| Integrante 1 | correo1@uniandes.edu.co |
-| Integrante 2 | correo2@uniandes.edu.co |
-| Integrante 3 | correo3@uniandes.edu.co |
-| Integrante 4 | correo4@uniandes.edu.co |
-| Integrante 5 | correo5@uniandes.edu.co |
+| Cristian F. Rubio A.| c.rubioa@uniandes.edu.co |
+| Anderson Arevalo Mendoza | a.arevalom@uniandes.edu.co |
+| Wilson Stiven Cardenas | w.cardenasq@uniandes.edu.co |
+| Ana Catalina Gelvez | ac.gelvez1783@uniandes.edu.co |
+| Damiel Sierra Rincón | dani-sie@uniandes.edu.co |
 
 ---
 
@@ -40,6 +40,54 @@ Las colecciones de Postman se encuentran en [/anb-rising-stars/collections/postm
 El enlace al video de sustentación se encuentra en [/anb-rising-stars/sustentacion/Entrega_1/video.mp4](anb-rising-stars/sustentacion/Entrega_1/video.mp4).
 
 ---
+
+# Proyecto ANB Rising Stars
+
+Este proyecto forma parte del curso **MISW4204 - Software en la Nube**, e implementa una aplicación web basada en arquitectura de microservicios, contenedores y base de datos SQL. Incluye API REST con autenticación, procesamiento asíncrono con Celery y despliegue con Docker Compose.
+
+---
+
+## 📦 Requerimientos del Sistema
+
+- **Python:** 3.10 o superior  
+- **SQL Database:** PostgreSQL 14 o superior  
+- **Docker:** 24+  
+- **Docker Compose:** 2.20+  
+
+---
+
+## 🧰 Instalación de dependencias
+
+Antes de ejecutar el proyecto, crea un entorno virtual e instala los requerimientos.
+
+```bash
+# Crear entorno virtual
+python3 -m venv venv
+source venv/bin/activate   # En Linux/Mac
+venv\Scripts\activate      # En Windows
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+----
+anb-rising-stars/
+│
+├── app/
+│   ├── api/
+│   │   ├── auth.py
+│   │   ├── videos.py
+│   │   └── votes.py
+│   ├── core/
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   └── security.py
+│   └── main.py
+│
+├── celery_worker.py
+├── docker-compose.yml
+├── requirements.txt
+├── run.py
+└── pytest.ini
 
 ## Análisis de Capacidad
 
