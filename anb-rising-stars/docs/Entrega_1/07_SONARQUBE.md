@@ -1,11 +1,5 @@
 # Reporte de Análisis de SonarQube - ANB Rising Stars Showcase
 
-## Estado Actual
-
-**Nota**: El análisis de SonarQube aún no ha sido implementado en esta entrega.
-
-Este documento será completado en futuras entregas del proyecto con los siguientes componentes:
-
 ---
 <img width="1467" height="441" alt="image" src="https://github.com/user-attachments/assets/0b8cc167-2ad2-4469-af42-4beca79cf474" />
 
