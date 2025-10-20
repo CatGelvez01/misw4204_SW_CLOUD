@@ -18,13 +18,13 @@ Hotspots de Seguridad Revisados	0%	Ninguno de los puntos marcados como sensibles
 Quality Gate	PASSED ✅	Aun con las observaciones, el proyecto cumple los umbrales mínimos definidos por la organización.
 
 - **Bugs**: Número de bugs detectados
-🐛 B1 Control de excepciones incompleto
+
+🐛 B1 - Control de excepciones incompleto
 Una o más funciones no manejan correctamente errores de base de datos o conexiones externas.
 Puede causar caída parcial del servicio o respuestas HTTP 500.
 Envolver llamadas a DB o API con try/except y registrar el error con logging.error().
 
-🐛 B2
-Retorno o flujo no controlado
+🐛 B2 - Retorno o flujo no controlado
 Una ruta o función no retorna respuesta en todos los casos posibles.
 Puede causar comportamiento impredecible o errores en FastAPI.
 Asegurar que cada endpoint tenga return Response() o raise HTTPException().
@@ -33,7 +33,8 @@ Asegurar que cada endpoint tenga return Response() o raise HTTPException().
 Número de Vulnerabilidades Detectadas	2	SonarQube identificó 2 issues con impacto en la seguridad del sistema.
 
 - **Code Smells**: Problemas de mantenibilidad y estilo
-Calificación de Mantenibilidad	A (Excelente)	Nivel más alto posible. El código es limpio y fácil de mantener.
+
+Calificación de Mantenibilidad -	A (Excelente)	Nivel más alto posible. El código es limpio y fácil de mantener.
 Total de Code Smells	13	Son observaciones menores, sin impacto funcional directo.
 Deuda técnica estimada	Muy baja (< 1h)	El esfuerzo para resolverlos es mínimo.
 Duplicaciones	0.8%	Excelente, sin redundancias significativas.
@@ -95,12 +96,13 @@ Quality Gate	Passed	Passed	✅ Estable
 ### 4. Detalles de Hallazgos
 
 - Listado de bugs críticos
-Bug1	Control de excepciones incompleto en funciones de servicio o rutas	🟡 Media	Puede generar errores 500 si no se manejan correctamente excepciones de base de datos o API	Implementar bloques try/except específicos y registrar los errores con logging.error()
+🐛 Bug1 - Control de excepciones incompleto en funciones de servicio o rutas	🟡 Media	Puede generar errores 500 si no se manejan correctamente excepciones de base de datos o API	Implementar bloques try/except específicos y registrar los errores con logging.error()
 
-Bug2	Flujo de retorno no controlado en endpoint de API	🟡 Media	Algunos endpoints podrían no retornar respuesta en todos los escenarios posibles
+🐛 Bug2	 - Flujo de retorno no controlado en endpoint de API	🟡 Media	Algunos endpoints podrían no retornar respuesta en todos los escenarios posibles
   
 - Vulnerabilidades de seguridad
 ID	Tipo	Descripción	Riesgo	Mitigación recomendada
+
 V1	Exposición potencial de claves o tokens	Se detecta manejo inseguro de variables como SECRET_KEY o DATABASE_URL	🔴 Alta	Usar .env protegido o servicio de secretos (Vault, AWS Secrets Manager)
 
 V2	Validación insuficiente de entrada del usuario	Falta de validación robusta en algunos endpoints antes de procesar datos	🟠 Media	Aplicar pydantic y sanitización de entradas en FastAPI
