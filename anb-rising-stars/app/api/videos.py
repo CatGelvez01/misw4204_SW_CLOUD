@@ -155,7 +155,7 @@ async def list_my_videos(
         processed_url = None
         if video.status == VideoStatus.PROCESSED and video.processed_path:
             filename = os.path.basename(video.processed_path)
-            processed_url = f"http://localhost:8080/processed/{filename}"
+            processed_url = f"{settings.server_url}/processed/{filename}"
 
         video_dict = {
             "video_id": str(video.id),
@@ -227,12 +227,12 @@ async def get_video_detail(
     original_url = None
     if video.original_path:
         filename = os.path.basename(video.original_path)
-        original_url = f"http://localhost:8080/uploads/{filename}"
+        original_url = f"{settings.server_url}/uploads/{filename}"
 
     processed_url = None
     if video.status == VideoStatus.PROCESSED and video.processed_path:
         filename = os.path.basename(video.processed_path)
-        processed_url = f"http://localhost:8080/processed/{filename}"
+        processed_url = f"{settings.server_url}/processed/{filename}"
 
     return {
         "video_id": str(video.id),

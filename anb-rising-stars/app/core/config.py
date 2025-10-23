@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     # CORS
     cors_origins: List[str] = ["http://localhost:3000", "http://localhost:8000"]
 
+    # Server URL for file access
+    server_url: str = "http://localhost:8080"
+
     # Logging
     log_level: str = "INFO"
 

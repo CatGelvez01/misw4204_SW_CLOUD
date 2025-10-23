@@ -18,6 +18,7 @@ from app.schemas import (
     UnauthorizedResponse,
 )
 from app.api.dependencies import get_current_user
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -50,7 +51,7 @@ async def list_public_videos(
         processed_url = None
         if video.status == VideoStatus.PROCESSED and video.processed_path:
             filename = os.path.basename(video.processed_path)
-            processed_url = f"http://localhost:8080/processed/{filename}"
+            processed_url = f"{settings.server_url}/processed/{filename}"
 
         video_dict = {
             "video_id": str(video.id),
