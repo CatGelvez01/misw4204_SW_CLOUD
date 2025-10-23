@@ -96,6 +96,9 @@ async def upload_video(
     with open(file_path, "wb") as f:
         f.write(content)
 
+    # Set file permissions to allow other users to read (for NFS access)
+    os.chmod(file_path, 0o666)
+
     # Create video record
     video = Video(
         owner_id=current_user.id,

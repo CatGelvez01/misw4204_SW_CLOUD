@@ -59,7 +59,7 @@ class VideoProcessor:
             )
 
             cmd = [
-                "ffmpeg",
+                "/usr/bin/ffmpeg",
                 "-i",
                 input_path,
                 "-t",
@@ -70,7 +70,7 @@ class VideoProcessor:
                 "-c:v",
                 "libx264",
                 "-preset",
-                "fast",
+                "ultrafast",
                 "-crf",
                 "23",
                 "-pix_fmt",
@@ -79,7 +79,7 @@ class VideoProcessor:
                 temp_video_path,
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
 
             if result.returncode != 0:
                 logger.error(f"FFmpeg error: {result.stderr}")
@@ -100,7 +100,7 @@ class VideoProcessor:
 
             # Concatenate using concat demuxer
             concat_cmd = [
-                "ffmpeg",
+                "/usr/bin/ffmpeg",
                 "-f",
                 "concat",
                 "-safe",
@@ -114,7 +114,7 @@ class VideoProcessor:
             ]
 
             result = subprocess.run(
-                concat_cmd, capture_output=True, text=True, timeout=600
+                concat_cmd, capture_output=True, text=True, timeout=1800
             )
 
             if result.returncode != 0:
