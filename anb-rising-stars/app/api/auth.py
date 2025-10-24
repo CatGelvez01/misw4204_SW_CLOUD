@@ -2,13 +2,16 @@
 Authentication endpoints.
 """
 
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from datetime import timedelta
 from app.core.database import get_db
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
 from app.models import User
+
 from app.schemas import (
     UserRegister,
     UserLogin,
@@ -19,6 +22,7 @@ from app.schemas import (
 )
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -67,9 +71,17 @@ async def signup(user_data: UserRegister, db: Session = Depends(get_db)):
         country=user_data.country,
     )
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    try:
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Database error during user creation: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al crear el usuario. Por favor intenta de nuevo.",
+        )
 
     return {
         "message": "Usuario creado exitosamente.",

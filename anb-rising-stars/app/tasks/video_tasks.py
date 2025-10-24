@@ -51,7 +51,7 @@ def process_video_task(self, video_id):
         logger.info(f"Video {video_id} processed successfully")
         return {"status": "success", "video_id": video_id}
 
-    except Exception as exc:
+    except (RuntimeError, OSError, IOError) as exc:
         logger.error(f"Error processing video {video_id}: {str(exc)}")
 
         # Update video status to failed

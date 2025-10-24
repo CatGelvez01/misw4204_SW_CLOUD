@@ -58,6 +58,12 @@ class VideoProcessor:
                 settings.processed_dir, f"{video_id}_temp.mp4"
             )
 
+            scale_filter = (
+                f"scale={settings.video_output_width}:{settings.video_output_height}:"
+                f"force_original_aspect_ratio=decrease,"
+                f"pad={settings.video_output_width}:{settings.video_output_height}:"
+                f"(ow-iw)/2:(oh-ih)/2"
+            )
             cmd = [
                 "/usr/bin/ffmpeg",
                 "-i",
@@ -65,16 +71,16 @@ class VideoProcessor:
                 "-t",
                 str(self.max_duration),
                 "-vf",
-                "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2",
+                scale_filter,
                 "-an",
                 "-c:v",
                 "libx264",
                 "-preset",
-                "ultrafast",
+                settings.video_ffmpeg_preset,
                 "-crf",
-                "23",
+                str(settings.video_ffmpeg_crf),
                 "-pix_fmt",
-                "yuv420p",
+                settings.video_ffmpeg_pix_fmt,
                 "-y",
                 temp_video_path,
             ]
@@ -134,7 +140,10 @@ class VideoProcessor:
 
         except subprocess.TimeoutExpired:
             logger.error(f"Video processing timeout for video {video_id}")
-            raise Exception("Video processing timeout")
-        except Exception as e:
-            logger.error(f"Error processing video {video_id}: {str(e)}")
+            raise RuntimeError("Video processing timeout")
+        except (OSError, IOError) as e:
+            logger.error(f"File system error processing video {video_id}: {str(e)}")
+            raise
+        except subprocess.CalledProcessError as e:
+            logger.error(f"FFmpeg process error for video {video_id}: {str(e)}")
             raise

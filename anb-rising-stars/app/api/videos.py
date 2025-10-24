@@ -2,14 +2,17 @@
 Video management endpoints.
 """
 
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 import os
 import uuid
 import re
 from app.core.database import get_db
 from app.core.config import settings
 from app.models import User, Video, VideoStatus
+
 from app.schemas import (
     VideoResponse,
     VideoDetailResponse,
@@ -25,6 +28,7 @@ from app.api.dependencies import get_current_user
 from app.tasks.video_tasks import process_video_task
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -109,9 +113,17 @@ async def upload_video(
         task_id=file_id,
     )
 
-    db.add(video)
-    db.commit()
-    db.refresh(video)
+    try:
+        db.add(video)
+        db.commit()
+        db.refresh(video)
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Database error during video upload: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al guardar el video. Por favor intenta de nuevo.",
+        )
 
     # Enqueue processing task to Celery
     task = process_video_task.delay(video.id)

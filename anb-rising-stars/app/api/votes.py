@@ -2,12 +2,15 @@
 Voting and ranking endpoints.
 """
 
+import logging
 import os
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
+from sqlalchemy.exc import SQLAlchemyError
 from app.core.database import get_db
 from app.models import User, Video, Vote, VideoStatus
+
 from app.schemas import (
     VoteResponse,
     RankingEntry,
@@ -21,6 +24,7 @@ from app.api.dependencies import get_current_user
 from app.core.config import settings
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get(
@@ -42,7 +46,14 @@ async def list_public_videos(
     Returns:
         list: List of public videos
     """
-    videos = db.query(Video).filter(Video.status == VideoStatus.PROCESSED).all()
+    try:
+        videos = db.query(Video).filter(Video.status == VideoStatus.PROCESSED).all()
+    except SQLAlchemyError as e:
+        logger.error(f"Database error fetching public videos: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al obtener los videos. Por favor intenta de nuevo.",
+        )
 
     # Build response with proper field names
     result = []
@@ -138,8 +149,16 @@ async def vote_video(
         video_id=video_id,
     )
 
-    db.add(vote)
-    db.commit()
+    try:
+        db.add(vote)
+        db.commit()
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Database error during vote creation: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al registrar el voto. Por favor intenta de nuevo.",
+        )
 
     return VoteResponse(message="Voto registrado exitosamente.")
 
@@ -178,33 +197,40 @@ async def get_rankings(
     Raises:
         HTTPException: If invalid parameters
     """
-    # Build query
-    query = (
-        db.query(
-            User.id,
-            User.first_name,
-            User.last_name,
-            User.city,
-            func.count(Vote.id).label("vote_count"),
+    try:
+        # Build query
+        query = (
+            db.query(
+                User.id,
+                User.first_name,
+                User.last_name,
+                User.city,
+                func.count(Vote.id).label("vote_count"),
+            )
+            .outerjoin(Video, User.id == Video.owner_id)
+            .outerjoin(Vote, Video.id == Vote.video_id)
+            .filter(Video.status == VideoStatus.PROCESSED)
+            .group_by(
+                User.id,
+                User.first_name,
+                User.last_name,
+                User.city,
+            )
+            .order_by(desc("vote_count"))
         )
-        .outerjoin(Video, User.id == Video.owner_id)
-        .outerjoin(Vote, Video.id == Vote.video_id)
-        .filter(Video.status == VideoStatus.PROCESSED)
-        .group_by(
-            User.id,
-            User.first_name,
-            User.last_name,
-            User.city,
+
+        # Apply city filter if provided
+        if city:
+            query = query.filter(User.city == city)
+
+        # Apply pagination
+        results = query.offset(offset).limit(limit).all()
+    except SQLAlchemyError as e:
+        logger.error(f"Database error fetching rankings: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al obtener los rankings. Por favor intenta de nuevo.",
         )
-        .order_by(desc("vote_count"))
-    )
-
-    # Apply city filter if provided
-    if city:
-        query = query.filter(User.city == city)
-
-    # Apply pagination
-    results = query.offset(offset).limit(limit).all()
 
     # Format response
     ranking = []

@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     video_output_resolution: str = "720p"
     video_aspect_ratio: str = "16:9"
     video_intro_outro_duration: int = 5  # seconds
+    video_output_width: int = 1280
+    video_output_height: int = 720
+    video_ffmpeg_preset: str = "ultrafast"
+    video_ffmpeg_crf: int = 23
+    video_ffmpeg_pix_fmt: str = "yuv420p"
 
     # CORS
     cors_origins: List[str] = ["http://localhost:3000", "http://localhost:8000"]
