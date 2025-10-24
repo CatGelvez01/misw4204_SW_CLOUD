@@ -2,6 +2,8 @@
 
 ## Cambios Realizados
 
+**commit:** https://github.com/CatGelvez01/misw4204_SW_CLOUD/commit/add8ce4c491b1b68b65079fe81522983c0999ef7
+
 Este documento documenta los cambios realizados en el código para corregir los hallazgos identificados por SonarQube en la Entrega 1.
 
 ### Hallazgos Corregidos
@@ -80,3 +82,8 @@ Este documento documenta los cambios realizados en el código para corregir los 
 - `app/tasks/video_tasks.py` - Excepciones específicas
 - `tests/test_security.py` - 14 nuevos tests
 - `tests/test_dependencies.py` - 5 nuevos tests
+
+
+---
+
+## Nuevas métricas de calidad

@@ -1,4 +1,20 @@
-# ANB Rising Stars Showcase - Entrega No. 1
+# ANB Rising Stars Showcase
+
+## Tabla de Contenido
+
+- [Información del Equipo](#información-del-equipo)
+- [Entrega No. 2](#entrega-no-2)
+  - [Documentación de la Entrega](#documentación-de-la-entrega)
+  - [Video de Sustentación](#video-de-sustentación)
+  - [Análisis de Capacidad](#análisis-de-capacidad)
+
+- [Entrega No. 1](#entrega-no-1)
+  - [Documentación de la Entrega](#documentación-de-la-entrega-1)
+  - [Colecciones de Postman](#colecciones-de-postman)
+  - [Video de Sustentación](#video-de-sustentación-1)
+  - [Análisis de Capacidad](#análisis-de-capacidad-1)
+
+---
 
 ## Información del Equipo
 
@@ -11,6 +27,37 @@
 | Daniel Sierra Rincón | dani-sie@uniandes.edu.co |
 
 ---
+
+# Entrega No. 2
+
+## Documentación de la Entrega
+
+Toda la documentación se encuentra en [/anb-rising-stars/docs/entrega2/](anb-rising-stars/docs/entrega2/).
+
+| Documento | Descripción |
+|-----------|-------------|
+| **[01_ARQUITECTURA_AWS.md](anb-rising-stars/docs/Entrega_2/01_ARQUITECTURA_AWS.md)** | Arquitectura de despliegue en AWS: modelo de componentes, modelo de despliegue, cambios respecto a Entrega 1 |
+| **[02_SONARQUBE.md](anb-rising-stars/docs/Entrega_2/02_SONARQUBE.md)** | Reporte de SonarQube con correcciones realizadas en el código desde Entrega 1 |
+
+
+## Video de Sustentación
+
+El enlace al video de sustentación se encuentra en [/anb-rising-stars/sustentacion/Entrega_2/archivo.md](anb-rising-stars/sustentacion/Entrega_2/archivo.md).
+
+
+## Análisis de Capacidad
+
+El análisis de capacidad y pruebas de carga se encuentran en [/anb-rising-stars/capacity-planning/pruebas_de_carga_entrega2.md](anb-rising-stars/capacity-planning/pruebas_de_carga_entrega2.md).
+
+| Documento | Descripción |
+|-----------|-------------|
+| **[pruebas_de_carga_entrega2.md](anb-rising-stars/capacity-planning/pruebas_de_carga_entrega2.md)** | Escenarios de carga (1 y 2), resultados de pruebas de estrés, análisis detallado y recomendaciones de escalabilidad |
+
+---
+
+# Entrega No. 1
+
+
 
 ## Documentación de la Entrega
 
@@ -46,54 +93,3 @@ El enlace al video de sustentación se encuentra en [/anb-rising-stars/sustentac
 El plan de análisis de capacidad de la aplicación se encuentra en [/anb-rising-stars/capacity-planning/plan_de_pruebas.md](anb-rising-stars/capacity-planning/plan_de_pruebas.md). Este documento incluye el plan detallado de análisis de capacidad, los escenarios de carga planteados, las métricas seleccionadas, los resultados esperados y las recomendaciones para escalar la solución.
 
 ---
-# Proyecto ANB Rising Stars
-
-Este proyecto forma parte del curso **MISW4204 - Software en la Nube**, e implementa una aplicación web basada en arquitectura de microservicios, contenedores y base de datos SQL. Incluye API REST con autenticación, procesamiento asíncrono con Celery y despliegue con Docker Compose.
-
----
-
-## 📦 Requerimientos del Sistema
-
-- **Python:** 3.10 o superior  
-- **SQL Database:** PostgreSQL 14 o superior  
-- **Docker:** 24+  
-- **Docker Compose:** 2.20+  
-
----
-
-## 🧰 Instalación de dependencias
-
-Antes de ejecutar el proyecto, crea un entorno virtual e instala los requerimientos.
-
-```bash
-# Crear entorno virtual
-python3 -m venv venv
-source venv/bin/activate   # En Linux/Mac
-venv\Scripts\activate      # En Windows
-
-# Instalar dependencias
-pip install -r requirements.txt
-
-----
-anb-rising-stars/
-│
-├── app/
-│   ├── api/
-│   │   ├── auth.py
-│   │   ├── videos.py
-│   │   └── votes.py
-│   ├── core/
-│   │   ├── config.py
-│   │   ├── database.py
-│   │   └── security.py
-│   └── main.py
-│
-├── celery_worker.py
-├── docker-compose.yml
-├── requirements.txt
-├── run.py
-└── pytest.ini
-
-## Análisis de Capacidad
-
-El plan de análisis de capacidad de la aplicación se encuentra en [/anb-rising-stars/capacity-planning/plan_de_pruebas.md](anb-rising-stars/capacity-planning/plan_de_pruebas.md). Este documento incluye el plan detallado de análisis de capacidad, los escenarios de carga planteados, las métricas seleccionadas, los resultados esperados y las recomendaciones para escalar la solución.
