@@ -1,0 +1,111 @@
+name: Tests Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  tests:
+    name: Unit Tests & API Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: anb-rising-stars
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Start Docker Compose services
+        run: docker compose up -d
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            if docker compose exec -T postgres pg_isready -U anb_user -d anb_rising_stars; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Wait for Redis
+        run: |
+          for i in {1..30}; do
+            if docker compose exec -T redis redis-cli ping | grep -q PONG; then
+              echo "Redis is ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Wait for FastAPI
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/ | grep -q "ANB Rising Stars"; then
+              echo "FastAPI is ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run unit tests with coverage
+        env:
+          TESTING: 'true'
+        run: |
+          pip install pytest-cov coverage
+          python -m pytest tests/ -v --tb=short --cov=app --cov-report=html --cov-report=term
+
+      - name: Upload unit test coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-tests-coverage
+          path: anb-rising-stars/htmlcov/
+          retention-days: 7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install Newman
+        run: npm install
+
+      - name: Run API tests
+        run: |
+          mkdir -p reports
+          npx newman run collections/postman_environment.json \
+            --reporters cli,json \
+            --reporter-json-export reports/api-tests.json \
+            --timeout 10000
+
+      - name: Upload API test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-tests-results
+          path: anb-rising-stars/reports/api-tests.json
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down
