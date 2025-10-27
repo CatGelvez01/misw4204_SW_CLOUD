@@ -144,6 +144,16 @@ Frente al % de Error de ambos entornos, podemos observar que en los primeros niv
 Finalmente, Al comparar los resultados de rendimiento. Podemos observar que el rendimiento aumenta proporcionalmente al número de usuarios hasta alcanzar un punto de saturación. Adicionalmente, ambos despliegues muestran capacidades de procesamiento similares. 
 <img width="752" height="444" alt="image" src="https://github.com/user-attachments/assets/a48b66c2-ec69-49c9-ab35-683f0503a477" />
 
+---
+**Conclusión:**  
+El sistema se comporta de manera estable hasta aproximadamente **3000 usuarios concurrentes**.  
+A partir de ese punto, la capacidad de procesamiento se ve comprometida, requiriendo escalamiento horizontal o balanceo de carga para soportar mayores volúmenes concurrentes.
+
+---
+**Conclusión:**  
+1. Implementar balanceo de carga (Nginx, HAProxy o AWS ELB).
+2. Desplegar réplicas adicionales del backend para manejar más sesiones simultáneas.
+
 ## Escenario 2
 
 # Informe Resumido — Rendimiento del Worker (videos/min)
