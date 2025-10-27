@@ -222,5 +222,3 @@ El sistema mantiene buena eficiencia hasta **2 workers por nodo**; a 4 comienza 
 El punto óptimo actual está en **≈ 4.5 videos/min (50 MB)** con 2 workers concurrentes.
 
 ---
-
-**Archivo sugerido:**  
