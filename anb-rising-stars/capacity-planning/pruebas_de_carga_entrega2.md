@@ -118,7 +118,7 @@ Se alcanza el límite de capacidad de la capa Web.
 La siguiente tabla resume el resultados de los diferentes escenarios que evaluaron el desempeño del servicio **Upload Video** bajo distintos volúmenes de usuarios concurrentes.  
 A continuación, se presentan los resultados obtenidos:
 
-| Usuarios Concurrentes | # Muestras | Media (ms) | % Error | Rendimiento | 
+| Usuarios Concurrentes | # Muestras | Media (ms) | % Error | Rendimiento (RPS) | 
 |------------------------|------------|-------------|-----------|-----------|
 | 100   | 100  | 762   |  0.00 % | 33.5/min  |
 | 500   | 500  | 743   |  0.00 % | 2.8/sec |
@@ -133,8 +133,16 @@ A continuación, se presentan los resultados obtenidos:
 
 
 ### Análisis
-
+A partir de los resultados obtenidos se puede comparar el rendimiento entre el despliegue local y en la nube. En el tiempo promedio de respuesta podemos observar que en condiciones de carga baja (hasta 3000 usuarios), los tiempos promedio de respuesta son similares entre ambos entornos. Sin embargo a partir de los 4000 usuarios se observa un crecimiento mayor en el tiempo de respuesta comparado al crecimiento de ejecucion local, lo cual se puede deber a la conectividad o la latencia de red y la sobrecarga de los recursos virtuales de la nube que afectan la capacidad de respuesta. 
 <img width="752" height="444" alt="image" src="https://github.com/user-attachments/assets/5cf4d5d3-5bb8-4085-8137-7afc03fde485" />
+
+**Figura 9.** Tiempo de respuesta en ejecucion local y en la nube  
+
+Frente al % de Error de ambos entornos, podemos observar que en los primeros niveles de carga (hasta 5000 usuarios), ambos entornos mantienen un 0 % de error, mostrando estabilidad y capacidad para manejar solicitudes concurrentes sin fallos. A partir de 6000 usuarios, el entorno en la nube comienza a registrar errores, alcanzando aproximadamente 35 % con 8000 usuarios y 55 % con 10000 usuarios. Esto sugiere que el entorno en la nube presenta limitaciones en la configuración de recursos asignados o en la gestión de conexiones simultáneas, lo que provoca timeouts y fallos en la respuesta.
+<img width="752" height="444" alt="image" src="https://github.com/user-attachments/assets/12f2a50c-c5f1-49e6-8adb-211cb93457c5" />
+**Figura 10.** %Error en ejecucion local y en la nube  
+Finalmente, Al comparar los resultados de rendimiento. Podemos observar que el rendimiento aumenta proporcionalmente al número de usuarios hasta alcanzar un punto de saturación. Adicionalmente, ambos despliegues muestran capacidades de procesamiento similares. 
+<img width="752" height="444" alt="image" src="https://github.com/user-attachments/assets/a48b66c2-ec69-49c9-ab35-683f0503a477" />
 
 ## Escenario 2
 
