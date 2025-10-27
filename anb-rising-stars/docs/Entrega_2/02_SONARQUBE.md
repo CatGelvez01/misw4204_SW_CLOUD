@@ -196,13 +196,6 @@ Vulnerabilidades	0 críticas	1 detectada	🔴 No cumple
 Code Smells	≤ 20	58	🟠 Requiere mejora
 Debt Ratio (Deuda Técnica)	≤ 5%	8.7%	🟠 En riesgo
 
-**📊 Resultado general:**
-El proyecto no supera el umbral de calidad mínimo debido principalmente a:
-
-- Falta de pruebas automatizadas.
-- Existencia de bugs críticos y vulnerabilidades.
-- Acumulación de code smells sin resolver.
-
 **Tendencias**
 
 El análisis histórico muestra la siguiente evolución:
