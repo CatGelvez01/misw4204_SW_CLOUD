@@ -134,7 +134,7 @@ A continuación, se presentan los resultados obtenidos:
 
 ### Análisis
 
-(Por completar)
+<img width="752" height="444" alt="image" src="https://github.com/user-attachments/assets/5cf4d5d3-5bb8-4085-8137-7afc03fde485" />
 
 ## Escenario 2
 
