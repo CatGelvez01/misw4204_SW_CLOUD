@@ -88,6 +88,10 @@ Este documento documenta los cambios realizados en el código para corregir los 
 
 ## Nuevas métricas de calidad
 
+
+<img width="1422" height="257" alt="image" src="https://github.com/user-attachments/assets/617741d7-d1d4-4c57-9af8-189a76bba620" />
+
+
 **Resumen General**
 - Métrica	Estado	Valor / Descripción
 - Quality Gate	❌ Failed	El proyecto no cumple con uno o más criterios mínimos de calidad
@@ -110,12 +114,16 @@ Condiciones evaluadas:
 **Seguridad**
 Hallazgos:
 
+<img width="351" height="242" alt="image" src="https://github.com/user-attachments/assets/63f009f0-f2ee-463b-ac38-12cb3f006b7b" />
+
 2 vulnerabilidades críticas:
 - Uso de funciones o dependencias inseguras.
 - Posibles riesgos de inyección o manejo inseguro de variables.
 - Hotspots: 0% revisados (deben ser evaluados manualmente).
 
 **Fiabilidad (Reliability)**
+
+<img width="341" height="240" alt="image" src="https://github.com/user-attachments/assets/2bd2aa21-86d1-405a-bf5d-7eee3f469dd9" />
 
 Nivel: C (4 issues detectados)
 
@@ -126,6 +134,8 @@ Tipo de problemas:
 
 **Mantenibilidad**
 
+<img width="339" height="243" alt="image" src="https://github.com/user-attachments/assets/40fc8302-25cc-44e9-8ad3-6e12bd1bb06c" />
+
 Nivel: A
 - Code Smells: 12 (de baja severidad)
 - Complejidad y duplicación: dentro de límites recomendados.
@@ -134,6 +144,9 @@ Nivel: A
 Cobertura automática no reportada.
 
 **Duplicaciones**
+
+<img width="336" height="282" alt="image" src="https://github.com/user-attachments/assets/1a1b65eb-96bc-46e8-81ff-86ed0a08135c" />
+
 - Duplicación total: 0.8%
 - Valor aceptable (< 3%)
 - Ninguna acción requerida inmediata.
@@ -143,6 +156,10 @@ Cobertura General:
 Actualmente el análisis no reporta cobertura de pruebas unitarias en SonarQube, lo que indica que no se han configurado correctamente los reportes de cobertura o que no existen pruebas automatizadas ejecutadas durante el análisis.
 
 🔴 Cobertura actual: 0%
+
+
+<img width="338" height="273" alt="image" src="https://github.com/user-attachments/assets/4c95b5e4-7188-4d2f-be2f-c7abc54bc44f" />
+
 
 **Cobertura por Módulo**
 No se dispone de un desglose por módulo debido a la falta de reporte de cobertura.
@@ -194,9 +211,5 @@ Fecha	Estado Quality Gate	Cobertura	Bugs	Vulnerabilidades
 - 2do Análisis	Rechazado	15%	2	1
 - 3er Análisis (Actual)	Rechazado	0%	2	1
 
-📈 Interpretación:
-
- - No se evidencia una mejora sostenida en cobertura o corrección de bugs.
- - Se recomienda aplicar un plan de mejora de calidad continua y automatizar la revisión con cada commit (CI/CD + Sonar Scanner).
 
 
