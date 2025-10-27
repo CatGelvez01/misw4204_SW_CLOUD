@@ -88,7 +88,3 @@ Este documento documenta los cambios realizados en el código para corregir los 
 
 ## Nuevas métricas de calidad
 
-
-`docs/plan_b_worker_resumen.md`
-
-
