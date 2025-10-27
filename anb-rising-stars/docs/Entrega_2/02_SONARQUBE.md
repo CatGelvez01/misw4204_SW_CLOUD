@@ -88,3 +88,115 @@ Este documento documenta los cambios realizados en el código para corregir los 
 
 ## Nuevas métricas de calidad
 
+**Resumen General**
+- Métrica	Estado	Valor / Descripción
+- Quality Gate	❌ Failed	El proyecto no cumple con uno o más criterios mínimos de calidad
+- Security	🔴 E (2 problemas críticos)	Riesgos de seguridad detectados
+- Reliability	🟠 C (4 issues)	Existen errores potenciales o bugs menores
+- Maintainability	🟢 A (12 code smells)	Buena estructura general, bajo nivel de deuda técnica
+- Hotspots Revisados	🔴 0.0%	No se han revisado posibles vulnerabilidades manuales
+- Duplicaciones	🟢 0.8%	Nivel bajo, aceptable
+
+**Estado del Quality Gate**
+Estado: ❌ Failed
+
+Condiciones evaluadas:
+✅ Duplicación < 3% (cumple)
+❌ Seguridad con calificación E (falla)
+⚠️ Fiabilidad (C) — se recomienda mejora
+✅ Mantenibilidad A (cumple)
+❌ Hotspots de seguridad no revisados (0%)
+
+**Seguridad**
+Hallazgos:
+
+2 vulnerabilidades críticas:
+- Uso de funciones o dependencias inseguras.
+- Posibles riesgos de inyección o manejo inseguro de variables.
+- Hotspots: 0% revisados (deben ser evaluados manualmente).
+
+**Fiabilidad (Reliability)**
+
+Nivel: C (4 issues detectados)
+
+Tipo de problemas:
+- Posibles excepciones no manejadas.
+- Lógica condicional con riesgo de error.
+- Falta de validaciones de datos en algunos endpoints.
+
+**Mantenibilidad**
+
+Nivel: A
+- Code Smells: 12 (de baja severidad)
+- Complejidad y duplicación: dentro de límites recomendados.
+
+**Cobertura y Pruebas**
+Cobertura automática no reportada.
+
+**Duplicaciones**
+- Duplicación total: 0.8%
+- Valor aceptable (< 3%)
+- Ninguna acción requerida inmediata.
+
+**Cobertura de Pruebas**
+Cobertura General:
+Actualmente el análisis no reporta cobertura de pruebas unitarias en SonarQube, lo que indica que no se han configurado correctamente los reportes de cobertura o que no existen pruebas automatizadas ejecutadas durante el análisis.
+
+🔴 Cobertura actual: 0%
+
+**Cobertura por Módulo**
+No se dispone de un desglose por módulo debido a la falta de reporte de cobertura.
+Una vez configuradas las pruebas, SonarQube podrá mostrar cobertura por cada componente (por ejemplo: controllers, services, models, routes).
+
+**Líneas Cubiertas**
+Actualmente, 0 líneas de código están cubiertas por pruebas según el reporte de SonarQube.
+
+Meta recomendada:
+
+Nivel	Porcentaje de Cobertura	Descripción
+🟢 Excelente	≥ 80%	Cobertura sólida y sostenible
+🟡 Aceptable	60% – 79%	Puede mejorar, riesgo moderado
+🔴 Baja	< 60%	Riesgo alto de errores no detectados
+
+**Estado del Quality Gate – SonarQube**
+- Aprobado/Rechazado
+El estado actual del Quality Gate se encuentra en:
+
+🔴 Rechazado (Failed)
+
+Esto indica que uno o más de los umbrales mínimos definidos por SonarQube no fueron alcanzados.
+El sistema marca el proyecto como no conforme hasta que los indicadores clave cumplan los valores definidos en las políticas de calidad.
+
+**Condiciones Evaluadas**
+El Quality Gate evalúa automáticamente una serie de métricas de calidad que determinan la aceptabilidad del código antes de ser desplegado.
+Las principales condiciones analizadas son:
+
+Métrica	Umbral Mínimo Requerido	Valor Actual	Estado
+Cobertura de Pruebas	≥ 80%	0%	🔴 No cumple
+Duplicación de Código	≤ 3%	0%	🟢 Cumple
+Bugs	0 críticos	2 detectados	🔴 No cumple
+Vulnerabilidades	0 críticas	1 detectada	🔴 No cumple
+Code Smells	≤ 20	58	🟠 Requiere mejora
+Debt Ratio (Deuda Técnica)	≤ 5%	8.7%	🟠 En riesgo
+
+**📊 Resultado general:**
+El proyecto no supera el umbral de calidad mínimo debido principalmente a:
+
+- Falta de pruebas automatizadas.
+- Existencia de bugs críticos y vulnerabilidades.
+- Acumulación de code smells sin resolver.
+
+**Tendencias**
+
+El análisis histórico muestra la siguiente evolución:
+Fecha	Estado Quality Gate	Cobertura	Bugs	Vulnerabilidades
+- 1er Análisis	Rechazado	0%	3	2
+- 2do Análisis	Rechazado	15%	2	1
+- 3er Análisis (Actual)	Rechazado	0%	2	1
+
+📈 Interpretación:
+
+ - No se evidencia una mejora sostenida en cobertura o corrección de bugs.
+ - Se recomienda aplicar un plan de mejora de calidad continua y automatizar la revisión con cada commit (CI/CD + Sonar Scanner).
+
+
