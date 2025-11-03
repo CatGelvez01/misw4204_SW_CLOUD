@@ -45,7 +45,7 @@ Toda la documentación se encuentra en [/anb-rising-stars/docs/Entrega_3/](anb-r
 
 ## Video de Sustentación 3
 
-[Completar con enlace al video de sustentación]
+El enlace al video de sustentación se encuentra en [/anb-rising-stars/sustentacion/Entrega_2/archivo.md](anb-rising-stars/sustentacion/Entrega_3/archivo.md). o puede accederse directamente haciendo click [...].
 
 ## Análisis de Capacidad 3
 
