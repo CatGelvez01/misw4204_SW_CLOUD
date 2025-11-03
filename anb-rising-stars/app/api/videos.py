@@ -12,6 +12,7 @@ import re
 from app.core.database import get_db
 from app.core.config import settings
 from app.models import User, Video, VideoStatus
+from app.services.s3_storage import S3Storage
 
 from app.schemas import (
     VideoResponse,
@@ -89,19 +90,28 @@ async def upload_video(
             detail=f"El archivo excede el tamaño máximo de {settings.max_file_size / (1024 * 1024):.0f}MB.",
         )
 
-    # Create upload directory if it doesn't exist
-    os.makedirs(settings.upload_dir, exist_ok=True)
-
-    # Generate unique filename
+    # Generate unique file ID
     file_id = str(uuid.uuid4())
-    file_path = os.path.join(settings.upload_dir, f"{file_id}.mp4")
 
-    # Save file
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-    # Set file permissions to allow other users to read (for NFS access)
-    os.chmod(file_path, 0o666)
+    # Upload to S3 or local storage
+    if settings.use_s3:
+        try:
+            s3_storage = S3Storage()
+            s3_key = s3_storage.upload_video(content, file_id)
+            file_path = s3_key
+        except Exception as e:
+            logger.error(f"S3 upload error: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al guardar el video en S3.",
+            )
+    else:
+        # Local storage fallback
+        os.makedirs(settings.upload_dir, exist_ok=True)
+        file_path = os.path.join(settings.upload_dir, f"{file_id}.mp4")
+        with open(file_path, "wb") as f:
+            f.write(content)
+        os.chmod(file_path, 0o666)
 
     # Create video record
     video = Video(
@@ -238,16 +248,36 @@ async def get_video_detail(
             detail="No tienes permiso para acceder a este video.",
         )
 
-    # Convert filesystem paths to HTTP URLs
+    # Convert paths to URLs
     original_url = None
     if video.original_path:
-        filename = os.path.basename(video.original_path)
-        original_url = f"{settings.server_url}/uploads/{filename}"
+        if settings.use_s3:
+            # Generate presigned URL for S3 (valid for 1 hour)
+            try:
+                s3_storage = S3Storage()
+                original_url = s3_storage.get_presigned_url(str(video.id))
+            except Exception as e:
+                logger.error(f"Error generating S3 URL: {str(e)}")
+                original_url = None
+        else:
+            # Local storage URL
+            filename = os.path.basename(video.original_path)
+            original_url = f"{settings.server_url}/uploads/{filename}"
 
     processed_url = None
     if video.status == VideoStatus.PROCESSED and video.processed_path:
-        filename = os.path.basename(video.processed_path)
-        processed_url = f"{settings.server_url}/processed/{filename}"
+        if settings.use_s3:
+            # Generate presigned URL for S3 (valid for 1 hour)
+            try:
+                s3_storage = S3Storage()
+                processed_url = s3_storage.get_presigned_url(str(video.id))
+            except Exception as e:
+                logger.error(f"Error generating S3 URL: {str(e)}")
+                processed_url = None
+        else:
+            # Local storage URL
+            filename = os.path.basename(video.processed_path)
+            processed_url = f"{settings.server_url}/processed/{filename}"
 
     return {
         "video_id": str(video.id),

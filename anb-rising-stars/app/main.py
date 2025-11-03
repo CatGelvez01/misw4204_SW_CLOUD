@@ -3,6 +3,7 @@ Main FastAPI application.
 """
 
 import os
+from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
@@ -41,4 +42,13 @@ async def root():
         "message": "ANB Rising Stars Showcase API",
         "version": settings.app_version,
         "status": "running",
+    }
+
+
+@app.get("/health", tags=["Health"])
+async def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "service": "ANB Rising Stars API",
     }

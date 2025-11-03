@@ -5,6 +5,7 @@ Video processing service.
 import os
 import logging
 import subprocess
+import tempfile
 from pathlib import Path
 from app.core.config import settings
 
@@ -23,22 +24,36 @@ class VideoProcessor:
         self.output_resolution = settings.video_output_resolution
         self.aspect_ratio = settings.video_aspect_ratio
         self.intro_outro_duration = settings.video_intro_outro_duration
+        self.temp_files = []  # Track temp files for cleanup
 
     def process_video(self, input_path: str, video_id) -> str:
         """
         Process a video: trim, adjust resolution, add intro with ANB logo, remove audio.
 
         Args:
-            input_path: Path to the input video
+            input_path: Path to the input video (local or S3)
             video_id: ID of the video being processed (UUID or int)
 
         Returns:
-            str: Path to the processed video
+            str: Path to the processed video (local path)
 
         Raises:
             Exception: If processing fails
         """
         try:
+            # Download from S3 if needed
+            if settings.use_s3:
+                from app.services.s3_storage import S3Storage
+
+                s3_storage = S3Storage()
+                video_content = s3_storage.download_video(str(video_id))
+                # Save to temp file
+                with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
+                    tmp.write(video_content)
+                    input_path = tmp.name
+                    self.temp_files.append(input_path)
+                logger.info(f"Downloaded video from S3 to {input_path}")
+
             # Create output directory if it doesn't exist
             os.makedirs(settings.processed_dir, exist_ok=True)
 
@@ -135,15 +150,34 @@ class VideoProcessor:
             if os.path.exists(temp_video_path):
                 os.remove(temp_video_path)
 
+            # Clean up S3 downloaded temp files
+            for temp_file in self.temp_files:
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+                    logger.info(f"Cleaned up temp file: {temp_file}")
+
             logger.info(f"Video {video_id} processed successfully: {output_path}")
             return output_path
 
         except subprocess.TimeoutExpired:
             logger.error(f"Video processing timeout for video {video_id}")
+            self._cleanup_temp_files()
             raise RuntimeError("Video processing timeout")
         except (OSError, IOError) as e:
             logger.error(f"File system error processing video {video_id}: {str(e)}")
+            self._cleanup_temp_files()
             raise
         except subprocess.CalledProcessError as e:
             logger.error(f"FFmpeg process error for video {video_id}: {str(e)}")
+            self._cleanup_temp_files()
             raise
+
+    def _cleanup_temp_files(self):
+        """Clean up temporary files."""
+        for temp_file in self.temp_files:
+            try:
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+                    logger.info(f"Cleaned up temp file: {temp_file}")
+            except Exception as e:
+                logger.warning(f"Failed to clean up temp file {temp_file}: {str(e)}")

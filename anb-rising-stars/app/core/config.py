@@ -32,11 +32,20 @@ class Settings(BaseSettings):
     celery_broker_url: str = "redis://localhost:6379/1"
     celery_result_backend: str = "redis://localhost:6379/2"
 
-    # File Storage - Use absolute paths
+    # File Storage - Use absolute paths (for local development)
     upload_dir: str = "/app/uploads"
     processed_dir: str = "/app/processed"
     max_file_size: int = 104857600  # 100MB
     allowed_video_formats: List[str] = ["mp4"]
+
+    # AWS S3 Configuration
+    use_s3: bool = False
+    aws_region: str = "us-east-1"
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
+    s3_bucket: str = "anb-rising-stars-videos"
+    s3_original_prefix: str = "original"
+    s3_processed_prefix: str = "processed"
 
     # Video Processing
     video_min_duration: int = 20  # seconds
