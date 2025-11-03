@@ -3,6 +3,11 @@
 ## Tabla de Contenido
 
 - [Información del Equipo](#información-del-equipo)
+- [Entrega No. 3](#entrega-no-3)
+  - [Documentación de la Entrega](#documentación-de-la-entrega-3)
+  - [Video de Sustentación](#video-de-sustentación-3)
+  - [Análisis de Capacidad](#análisis-de-capacidad-3)
+
 - [Entrega No. 2](#entrega-no-2)
   - [Documentación de la Entrega](#documentación-de-la-entrega)
   - [Video de Sustentación](#video-de-sustentación)
@@ -25,6 +30,30 @@
 | Wilson Stevens Cardenas | w.cardenasq@uniandes.edu.co |
 | Ana Catalina Gelvez | ac.gelvez1783@uniandes.edu.co |
 | Daniel Sierra Rincón | dani-sie@uniandes.edu.co |
+
+---
+
+# Entrega No. 3
+
+## Documentación de la Entrega 3
+
+Toda la documentación se encuentra en [/anb-rising-stars/docs/Entrega_3/](anb-rising-stars/docs/Entrega_3/).
+
+| Documento | Descripción |
+|-----------|-------------|
+| **[01_ARQUITECTURA_ESCALABILIDAD.md](anb-rising-stars/docs/Entrega_3/01_ARQUITECTURA_ESCALABILIDAD.md)** | Arquitectura de escalabilidad en la capa web: Load Balancer, Auto Scaling, S3, CloudWatch, cambios respecto a Entrega 2 |
+
+## Video de Sustentación 3
+
+[Completar con enlace al video de sustentación]
+
+## Análisis de Capacidad 3
+
+El análisis de capacidad y pruebas de carga se encuentran en [/anb-rising-stars/capacity-planning/pruebas_de_carga_entrega3.md](anb-rising-stars/capacity-planning/pruebas_de_carga_entrega3.md).
+
+| Documento | Descripción |
+|-----------|-------------|
+| **[pruebas_de_carga_entrega3.md](anb-rising-stars/capacity-planning/pruebas_de_carga_entrega3.md)** | Escenarios de carga (1 y 2), resultados de pruebas de estrés, análisis detallado y recomendaciones para escalabilidad futura |
 
 ---
 
