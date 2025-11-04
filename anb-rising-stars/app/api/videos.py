@@ -254,12 +254,10 @@ async def get_video_detail(
     original_url = None
     if video.original_path:
         if settings.use_s3:
-            # Generate presigned URL for S3 (valid for 1 hour)
+            # Generate public URL for S3
             try:
                 s3_storage = S3Storage()
-                original_url = s3_storage.get_presigned_url(
-                    str(video.id), prefix=settings.s3_original_prefix
-                )
+                original_url = f"https://{s3_storage.bucket}.s3.amazonaws.com/{video.original_path}"
             except Exception as e:
                 logger.error(f"Error generating S3 URL: {str(e)}")
                 original_url = None
@@ -271,12 +269,10 @@ async def get_video_detail(
     processed_url = None
     if video.status == VideoStatus.PROCESSED and video.processed_path:
         if settings.use_s3:
-            # Generate presigned URL for S3 (valid for 1 hour)
+            # Generate public URL for S3
             try:
                 s3_storage = S3Storage()
-                processed_url = s3_storage.get_presigned_url(
-                    str(video.id), prefix=settings.s3_processed_prefix
-                )
+                processed_url = f"https://{s3_storage.bucket}.s3.amazonaws.com/{video.processed_path}"
             except Exception as e:
                 logger.error(f"Error generating S3 URL: {str(e)}")
                 processed_url = None
