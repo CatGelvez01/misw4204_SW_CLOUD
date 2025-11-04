@@ -57,7 +57,9 @@ class S3Storage:
                 )
             else:
                 # Upload from file path
-                self.s3_client.upload_file(file_path, self.bucket, key)
+                self.s3_client.upload_file(
+                    file_path, self.bucket, key, ExtraArgs={"ContentType": "video/mp4"}
+                )
             logger.info(f"Uploaded video to S3: {key}")
             return key
         except ClientError as e:
