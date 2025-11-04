@@ -31,7 +31,7 @@ class VideoProcessor:
         Process a video: trim, adjust resolution, add intro with ANB logo, remove audio.
 
         Args:
-            input_path: Path to the input video (local or S3)
+            input_path: Path to the input video (local path or S3 key)
             video_id: ID of the video being processed (UUID or int)
 
         Returns:
@@ -46,9 +46,10 @@ class VideoProcessor:
                 from app.services.s3_storage import S3Storage
 
                 s3_storage = S3Storage()
-                video_content = s3_storage.download_video(
-                    str(video_id), prefix=settings.s3_original_prefix
-                )
+                # input_path is the S3 key (e.g., "original/uuid.mp4")
+                video_content = s3_storage.s3_client.get_object(
+                    Bucket=s3_storage.bucket, Key=input_path
+                )["Body"].read()
                 # Save to temp file
                 with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
                     tmp.write(video_content)
