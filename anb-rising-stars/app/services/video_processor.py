@@ -46,7 +46,9 @@ class VideoProcessor:
                 from app.services.s3_storage import S3Storage
 
                 s3_storage = S3Storage()
-                video_content = s3_storage.download_video(str(video_id))
+                video_content = s3_storage.download_video(
+                    str(video_id), prefix=settings.s3_original_prefix
+                )
                 # Save to temp file
                 with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
                     tmp.write(video_content)

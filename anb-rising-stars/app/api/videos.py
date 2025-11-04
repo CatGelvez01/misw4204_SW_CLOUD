@@ -97,7 +97,9 @@ async def upload_video(
     if settings.use_s3:
         try:
             s3_storage = S3Storage()
-            s3_key = s3_storage.upload_video(content, file_id)
+            s3_key = s3_storage.upload_video(
+                content, file_id, prefix=settings.s3_original_prefix
+            )
             file_path = s3_key
         except Exception as e:
             logger.error(f"S3 upload error: {str(e)}")
@@ -255,7 +257,9 @@ async def get_video_detail(
             # Generate presigned URL for S3 (valid for 1 hour)
             try:
                 s3_storage = S3Storage()
-                original_url = s3_storage.get_presigned_url(str(video.id))
+                original_url = s3_storage.get_presigned_url(
+                    str(video.id), prefix=settings.s3_original_prefix
+                )
             except Exception as e:
                 logger.error(f"Error generating S3 URL: {str(e)}")
                 original_url = None
@@ -270,7 +274,9 @@ async def get_video_detail(
             # Generate presigned URL for S3 (valid for 1 hour)
             try:
                 s3_storage = S3Storage()
-                processed_url = s3_storage.get_presigned_url(str(video.id))
+                processed_url = s3_storage.get_presigned_url(
+                    str(video.id), prefix=settings.s3_processed_prefix
+                )
             except Exception as e:
                 logger.error(f"Error generating S3 URL: {str(e)}")
                 processed_url = None
@@ -355,11 +361,29 @@ async def delete_video(
         )
 
     # Delete files
-    if os.path.exists(video.original_path):
-        os.remove(video.original_path)
+    if settings.use_s3:
+        try:
+            s3_storage = S3Storage()
+            # Delete original video
+            if video.original_path:
+                s3_storage.delete_video(
+                    str(video.id), prefix=settings.s3_original_prefix
+                )
+            # Delete processed video if exists
+            if video.processed_path:
+                s3_storage.delete_video(
+                    str(video.id), prefix=settings.s3_processed_prefix
+                )
+        except Exception as e:
+            logger.error(f"Error deleting videos from S3: {str(e)}")
+            # Continue with database deletion even if S3 deletion fails
+    else:
+        # Local storage deletion
+        if os.path.exists(video.original_path):
+            os.remove(video.original_path)
 
-    if video.processed_path and os.path.exists(video.processed_path):
-        os.remove(video.processed_path)
+        if video.processed_path and os.path.exists(video.processed_path):
+            os.remove(video.processed_path)
 
     # Delete from database
     db.delete(video)

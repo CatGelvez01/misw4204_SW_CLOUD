@@ -48,7 +48,9 @@ def process_video_task(self, video_id):
         if settings.use_s3:
             try:
                 s3_storage = S3Storage()
-                s3_key = s3_storage.upload_video(processed_path, video_id)
+                s3_key = s3_storage.upload_video(
+                    processed_path, video_id, prefix=settings.s3_processed_prefix
+                )
                 processed_path = s3_key
                 logger.info(f"Uploaded processed video to S3: {s3_key}")
             except Exception as e:

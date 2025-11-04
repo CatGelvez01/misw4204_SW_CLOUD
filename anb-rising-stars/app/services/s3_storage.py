@@ -27,13 +27,14 @@ class S3Storage:
             self.s3_client = boto3.client("s3", region_name=settings.aws_region)
         self.bucket = settings.s3_bucket
 
-    def upload_video(self, file_path: str, video_id: str) -> str:
+    def upload_video(self, file_path: str, video_id: str, prefix: str = None) -> str:
         """
         Upload video to S3.
 
         Args:
             file_path: Local path to video file or bytes content
             video_id: Unique video identifier
+            prefix: Optional S3 prefix (folder). Defaults to s3_original_prefix
 
         Returns:
             str: S3 object key
@@ -41,7 +42,10 @@ class S3Storage:
         Raises:
             Exception: If upload fails
         """
-        key = f"{video_id}.mp4"
+        if prefix is None:
+            prefix = settings.s3_original_prefix
+
+        key = f"{prefix}/{video_id}.mp4"
         try:
             if isinstance(file_path, bytes):
                 # Upload from bytes
@@ -60,12 +64,13 @@ class S3Storage:
             logger.error(f"Error uploading video to S3: {str(e)}")
             raise
 
-    def download_video(self, video_id: str) -> bytes:
+    def download_video(self, video_id: str, prefix: str = None) -> bytes:
         """
         Download video from S3.
 
         Args:
             video_id: Unique video identifier
+            prefix: Optional S3 prefix (folder). Defaults to s3_original_prefix
 
         Returns:
             bytes: Video file content
@@ -73,7 +78,10 @@ class S3Storage:
         Raises:
             Exception: If download fails
         """
-        key = f"{video_id}.mp4"
+        if prefix is None:
+            prefix = settings.s3_original_prefix
+
+        key = f"{prefix}/{video_id}.mp4"
         try:
             response = self.s3_client.get_object(Bucket=self.bucket, Key=key)
             return response["Body"].read()
@@ -81,42 +89,47 @@ class S3Storage:
             logger.error(f"Error downloading from S3: {str(e)}")
             raise
 
-    def get_presigned_url(self, video_id: str) -> str:
+    def get_presigned_url(self, video_id: str, prefix: str = None) -> str:
         """
-        Generate presigned URL for video access.
+        Generate public URL for video access (requires bucket to have public read access).
 
         Args:
             video_id: Unique video identifier
+            prefix: Optional S3 prefix (folder). Defaults to s3_original_prefix
 
         Returns:
-            str: Presigned URL valid for 1 hour
+            str: Public S3 URL
 
         Raises:
             Exception: If URL generation fails
         """
-        key = f"{video_id}.mp4"
+        if prefix is None:
+            prefix = settings.s3_original_prefix
+
+        key = f"{prefix}/{video_id}.mp4"
         try:
-            url = self.s3_client.generate_presigned_url(
-                "get_object",
-                Params={"Bucket": self.bucket, "Key": key},
-                ExpiresIn=3600,  # 1 hour
-            )
+            url = f"https://{self.bucket}.s3.amazonaws.com/{key}"
+            logger.info(f"Generated public URL: {url}")
             return url
-        except ClientError as e:
-            logger.error(f"Error generating presigned URL: {str(e)}")
+        except Exception as e:
+            logger.error(f"Error generating public URL: {str(e)}")
             raise
 
-    def delete_video(self, video_id: str) -> None:
+    def delete_video(self, video_id: str, prefix: str = None) -> None:
         """
         Delete video from S3.
 
         Args:
             video_id: Unique video identifier
+            prefix: Optional S3 prefix (folder). Defaults to s3_original_prefix
 
         Raises:
             Exception: If deletion fails
         """
-        key = f"{video_id}.mp4"
+        if prefix is None:
+            prefix = settings.s3_original_prefix
+
+        key = f"{prefix}/{video_id}.mp4"
         try:
             self.s3_client.delete_object(Bucket=self.bucket, Key=key)
             logger.info(f"Deleted video from S3: {key}")
