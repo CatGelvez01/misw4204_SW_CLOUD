@@ -1,147 +1,102 @@
 # ENTREGA 3 - ARQUITECTURA DE ESCALABILIDAD EN LA CAPA WEB
 
-## Descripción General
+## Cambios Principales
 
-Este documento describe la arquitectura de la aplicación web escalable desplegada en AWS, implementando soluciones de autoescalado, balanceo de carga y almacenamiento de objetos para soportar una demanda creciente de usuarios.
-
-## Cambios Principales Respecto a Entrega 2
-
-### Nuevos Componentes Implementados
-
-1. **Load Balancer (ELB/ALB)**
-   - Distribución de tráfico entre múltiples instancias EC2
-   - Health checks automáticos
-   - Sesiones persistentes (sticky sessions) si es requerido
-
-2. **Auto Scaling Group**
-   - Escalado automático de instancias web (máximo 3 instancias)
-   - Políticas basadas en métricas de CloudWatch
-   - Escalado horizontal para distribuir carga
-
-3. **Amazon S3**
-   - Migración de almacenamiento de NFS a buckets S3
-   - Almacenamiento de videos originales y procesados
-   - Configuración de permisos y acceso seguro
-
-4. **CloudWatch Monitoring**
-   - Monitoreo de métricas de CPU, memoria y red
-   - Alarmas para disparo de políticas de escalado
-   - Logs centralizados de la aplicación
+1. **Load Balancer (ALB)**: Distribución de tráfico entre instancias web
+2. **Auto Scaling Group**: 1-3 instancias web según demanda
+3. **Amazon S3**: Reemplaza NFS para almacenamiento de videos
+4. **CloudWatch**: Monitoreo y alarmas de escalado
 
 ## Modelo de Despliegue
 
+```mermaid
+graph TB
+    subgraph AWS["AWS Cloud"]
+        subgraph VPC["Default VPC"]
+            ALB["ALB<br/>HTTP/HTTPS"]
+
+            subgraph ASG["Auto Scaling Group"]
+                WEB1["EC2: Web-1<br/>FastAPI + Nginx"]
+                WEB2["EC2: Web-2<br/>FastAPI + Nginx"]
+                WEB3["EC2: Web-3<br/>FastAPI + Nginx"]
+            end
+
+            FILE["EC2: File Server<br/>Redis"]
+            WORKER["EC2: Worker<br/>Celery + FFmpeg"]
+            RDS["RDS: PostgreSQL<br/>db.t3.micro"]
+            S3["S3: Buckets<br/>Videos"]
+        end
+    end
+
+    CLIENT["Cliente"]
+
+    CLIENT -->|HTTP/HTTPS| ALB
+    ALB -->|Distribuye| WEB1
+    ALB -->|Distribuye| WEB2
+    ALB -->|Distribuye| WEB3
+
+    WEB1 -->|Redis| FILE
+    WEB2 -->|Redis| FILE
+    WEB3 -->|Redis| FILE
+
+    WEB1 -->|S3| S3
+    WEB2 -->|S3| S3
+    WEB3 -->|S3| S3
+
+    WEB1 -->|PostgreSQL| RDS
+    WEB2 -->|PostgreSQL| RDS
+    WEB3 -->|PostgreSQL| RDS
+
+    WORKER -->|Redis| FILE
+    WORKER -->|S3| S3
+    WORKER -->|PostgreSQL| RDS
+
+    style ALB fill:#FF9900
+    style WEB1 fill:#FF9900
+    style WEB2 fill:#FF9900
+    style WEB3 fill:#FF9900
+    style FILE fill:#FFA500
+    style WORKER fill:#FF9900
+    style RDS fill:#527FFF
+    style S3 fill:#569A31
+    style AWS fill:#232F3E,color:#fff
+    style VPC fill:#E8E8E8,color:#000
+    style ASG fill:#F0F0F0,color:#000
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        Internet                              │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                    ┌────▼────┐
-                    │   ALB   │
-                    └────┬────┘
-                         │
-        ┌────────────────┼────────────────┐
-        │                │                │
-    ┌───▼───┐        ┌───▼───┐       ┌───▼───┐
-    │ EC2-1 │        │ EC2-2 │       │ EC2-3 │
-    │ (Web) │        │ (Web) │       │ (Web) │
-    └───┬───┘        └───┬───┘       └───┬───┘
-        │                │                │
-        └────────────────┼────────────────┘
-                         │
-        ┌────────────────┼────────────────┐
-        │                │                │
-    ┌───▼────┐      ┌────▼────┐     ┌────▼────┐
-    │   RDS  │      │    S3   │     │  Worker │
-    │   DB   │      │ Buckets │     │  (EC2)  │
-    └────────┘      └─────────┘     └─────────┘
-```
 
-## Componentes de la Arquitectura
+## Componentes
 
-### 1. Capa Web (EC2 Auto Scaling)
-- **Tipo de Instancia**: t3.small (2 vCPU, 2 GiB RAM, 30 GiB almacenamiento)
-- **Cantidad**: 1-3 instancias (escalado automático)
-- **Sistema Operativo**: Amazon Linux 2 o Ubuntu
-- **Aplicación**: API REST (Flask/Django/Node.js)
-- **Puerto**: 5000 (aplicación), 80/443 (ALB)
+| Componente | Especificación |
+|-----------|----------------|
+| **ALB** | HTTP/HTTPS, health check 30s |
+| **Web (ASG)** | t3.small, 1-3 instancias, FastAPI + Nginx |
+| **File Server** | t3.small, Redis |
+| **RDS** | PostgreSQL db.t3.micro, 100 GB |
+| **S3** | Buckets `/original/` y `/processed/` |
+| **Worker** | t3.small, Celery + FFmpeg |
+| **CloudWatch** | Métricas, logs, alarmas |
 
-### 2. Load Balancer (ALB)
-- **Tipo**: Application Load Balancer
-- **Protocolo**: HTTP/HTTPS
-- **Health Check**: Cada 30 segundos
-- **Timeout**: 60 segundos
-- **Distribución**: Round-robin
+## Auto Scaling
 
-### 3. Base de Datos (RDS)
-- **Motor**: PostgreSQL/MySQL
-- **Tipo de Instancia**: db.t3.micro
-- **Almacenamiento**: 100 GB (gp2)
-- **Backup**: Habilitado
-- **Multi-AZ**: Según disponibilidad
+| Acción | Métrica | Límite |
+|--------|---------|--------|
+| Scale Out | CPU > 70% (2 min) | Máx 3 instancias |
+| Scale In | CPU < 30% (5 min) | Mín 1 instancia |
 
-### 4. Almacenamiento de Objetos (S3)
-- **Bucket**: `anb-rising-stars-videos`
-- **Estructura**:
-  - `/original/` - Videos originales
-  - `/processed/` - Videos procesados
-- **Versionado**: Habilitado
-- **Acceso**: IAM Role para EC2
+## Seguridad
 
-### 5. Capa Worker (EC2)
-- **Tipo de Instancia**: t3.small
-- **Cantidad**: 1 instancia
-- **Función**: Procesamiento asíncrono de videos
-- **Cola**: SQS o Celery con Redis
+| SG | Puertos | Origen |
+|----|---------|--------|
+| ALB | 80, 443 | Internet |
+| Web | 80, 443 | ALB |
+| File Server | 6379 | Web, Worker |
+| RDS | 5432 | Web, Worker |
+| Worker | Interno | VPC |
 
-### 6. Monitoreo (CloudWatch)
-- **Métricas**: CPU, Memoria, Disco, Red
-- **Logs**: Centralizados en CloudWatch Logs
-- **Alarmas**: Para disparo de escalado
+**IAM**: LabRole con permisos S3, RDS, CloudWatch
 
-## Políticas de Auto Scaling
+## Límites AWS Academy
 
-### Escala Hacia Arriba (Scale Out)
-- **Métrica**: CPU > 70% durante 2 minutos
-- **Acción**: Agregar 1 instancia
-- **Máximo**: 3 instancias
-
-### Escala Hacia Abajo (Scale In)
-- **Métrica**: CPU < 30% durante 5 minutos
-- **Acción**: Remover 1 instancia
-- **Mínimo**: 1 instancia
-
-## Configuración de Seguridad
-
-### Security Groups
-- **Web SG**: Permite 80, 443 desde ALB
-- **ALB SG**: Permite 80, 443 desde Internet
-- **RDS SG**: Permite puerto 5432/3306 desde Web SG
-- **Worker SG**: Permite comunicación interna
-
-### IAM Roles
-- **LabRole**: Asignado a todas las instancias EC2
-- **Permisos**: S3, RDS, CloudWatch, SQS
-
-## Cambios en la Aplicación
-
-1. **Configuración de S3**: Integración de SDK de AWS
-2. **Variables de Entorno**: Credenciales y endpoints
-3. **Health Check Endpoint**: `/health` para ALB
-4. **Stateless**: Aplicación sin estado local
-5. **Logs**: Enviados a CloudWatch
-
-## Consideraciones de Escalabilidad
-
-- Máximo 9 instancias EC2 simultáneas (límite AWS Academy)
-- Máximo 32 vCPUs totales
-- Almacenamiento EBS limitado a 100 GB
-- Monitoreo continuo de costos
-- Detener instancias cuando no se usen
-
-## Próximos Pasos
-
-1. Implementar políticas de escalado más sofisticadas
-2. Agregar caché (ElastiCache)
-3. Implementar CDN (CloudFront)
-4. Optimizar costos con instancias reservadas
-5. Implementar disaster recovery
+- Máx 9 instancias EC2
+- Máx 32 vCPUs
+- Máx 100 GB EBS
