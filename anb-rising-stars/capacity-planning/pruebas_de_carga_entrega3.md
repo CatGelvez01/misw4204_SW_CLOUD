@@ -153,3 +153,94 @@ Este documento presenta el análisis detallado de las pruebas de carga realizada
 **Documento preparado por**: [Nombres del equipo]
 **Fecha de Entrega**: [Fecha]
 **Versión Final**: 1.0
+
+## Plan B
+### Informe Resumido — Rendimiento del Worker *(videos/min)*  
+**Fecha:** 2025-11-09  
+
+---
+
+### 🎯 Objetivo  
+Evaluar el comportamiento del *worker* bajo condiciones de recursos limitados, identificando el punto de saturación del sistema y el impacto en el throughput al incrementar la concurrencia en un entorno de cómputo reducido.
+
+---
+
+### 1. Metodología  
+
+Se replicó el procedimiento empleado en el **Escenario 2**, ejecutando pruebas controladas con **1** y **2** procesos concurrentes.  
+La prueba con **4 workers** no pudo completarse debido a las restricciones de la instancia (**2 vCPU / 4 GB RAM**), que provocaban **fallas de estabilidad y reinicio del proceso Celery** al intentar superar ese umbral.  
+
+Cada ejecución mantuvo constantes el dataset, la configuración de Redis y el procedimiento de encolamiento.  
+Los *workers* se iniciaron con los siguientes comandos:
+
+```bash
+# Concurrencia 1
+celery -A app.tasks.celery_app.celery_app worker -Q celery -n w1@%h -c 1 --loglevel=info
+
+# Concurrencia 2
+celery -A app.tasks.celery_app.celery_app worker -Q celery -n w1@%h -c 2 --loglevel=info
+ ```
+
+La carga de trabajo se generó con el mismo script de 11 tareas consecutivas:
+```bash
+python3 - <<'PY'
+from app.tasks.video_tasks import process_video_task
+video_id = "cc9318d6-b922-48c5-b71c-d927d3681a8f"
+for _ in range(11):
+process_video_task.delay(video_id)
+print("✅ Encoladas 11 tareas con éxito")
+PY
+ ```
+## 🧩 Resultados principales  
+
+**Tabla de rendimiento — Throughput promedio (videos/minuto):**  
+
+<img width="1572" height="979" alt="image" src="https://github.com/user-attachments/assets/1ee338a3-4a65-4925-a1e6-1ca942301711" />
+
+
+| Concurrencia | 50 MB | 100 MB |
+|---------------|-------|--------|
+| 1 worker | 1.9 | 0.8 |
+| 2 workers | 3.4 | 1.7 |
+
+> ⚠️ *El intento de ejecución con 4 workers provocó un consumo total de CPU (>95 %) y RAM (>3.8 GB), ocasionando el cierre forzado del proceso Celery. No se obtuvieron métricas válidas para este caso.*
+
+---
+
+### 🔍 Hallazgos clave  
+
+- El sistema mantiene estabilidad hasta **2 workers concurrentes**, pero no dispone de recursos suficientes para escalar más allá.  
+- Se observa **caída del throughput (~30 %)** respecto al Escenario 2 debido al incremento de latencia en disco y la contención de CPU.  
+- Las tareas de **100 MB** presentan un **tiempo promedio de servicio casi doble**, producto de la decodificación y el acceso a almacenamiento temporal.  
+- Durante los picos de carga, la **cola de Redis crece sostenidamente**, aunque sin pérdida de mensajes.  
+
+---
+
+### 📊 Métricas observadas  
+
+| Métrica | 50 MB | 100 MB |
+|----------|--------|---------|
+| Tiempo promedio por tarea | 29 s | 61 s |
+| Uso de CPU | hasta 90 % | hasta 95 % |
+| RAM | hasta 3.6 GB | hasta 3.9 GB |
+| Error rate | 12–20 % (estable) | hasta 50 % bajo saturación |
+
+---
+
+### ⚙️ Recomendaciones  
+
+- Mantener la concurrencia máxima en **2 workers por instancia** de estas características.  
+- Evaluar el uso de una **instancia con ≥ 4 vCPU y 8 GB RAM** para escenarios de alta carga.  
+- Reducir operaciones de disco implementando **pre-carga en memoria (tmpfs)** o **cacheo local**.  
+- Activar **`worker_prefetch_multiplier=1`** y la opción **`-Ofair`** para balancear la distribución de tareas.  
+- Incorporar **monitoreo en tiempo real con Prometheus/Grafana** para detectar saturación temprana.  
+
+---
+
+### 🧠 Conclusión  
+
+El sistema evidencia un **punto de saturación temprano**: con **2 workers** alcanza el máximo rendimiento sostenible (≈ **3.4 videos/min para 50 MB**), mientras que cualquier intento de escalar más allá provoca inestabilidad y caída del servicio.  
+A pesar de la reducción intencional de recursos, el *worker* mantiene un comportamiento controlado y confirma la **importancia de dimensionar la infraestructura** según la carga esperada.
+
+
+
