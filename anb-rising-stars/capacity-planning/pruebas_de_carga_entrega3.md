@@ -160,7 +160,7 @@ Este documento presenta el análisis detallado de las pruebas de carga realizada
 
 ---
 
-### 🎯 Objetivo  
+### Objetivo  
 Evaluar el comportamiento del *worker* bajo condiciones de recursos limitados, identificando el punto de saturación del sistema y el impacto en el throughput al incrementar la concurrencia en un entorno de cómputo reducido.
 
 ---
@@ -191,7 +191,7 @@ process_video_task.delay(video_id)
 print("✅ Encoladas 11 tareas con éxito")
 PY
  ```
-## 🧩 Resultados principales  
+## Resultados principales  
 
 **Tabla de rendimiento — Throughput promedio (videos/minuto):**  
 
@@ -207,7 +207,7 @@ PY
 
 ---
 
-### 🔍 Hallazgos clave  
+### Hallazgos clave  
 
 - El sistema mantiene estabilidad hasta **2 workers concurrentes**, pero no dispone de recursos suficientes para escalar más allá.  
 - Se observa **caída del throughput (~30 %)** respecto al Escenario 2 debido al incremento de latencia en disco y la contención de CPU.  
@@ -216,7 +216,7 @@ PY
 
 ---
 
-### 📊 Métricas observadas  
+### Métricas observadas  
 
 | Métrica | 50 MB | 100 MB |
 |----------|--------|---------|
@@ -227,7 +227,7 @@ PY
 
 ---
 
-### ⚙️ Recomendaciones  
+### Recomendaciones  
 
 - Mantener la concurrencia máxima en **2 workers por instancia** de estas características.  
 - Evaluar el uso de una **instancia con ≥ 4 vCPU y 8 GB RAM** para escenarios de alta carga.  
@@ -237,7 +237,7 @@ PY
 
 ---
 
-### 🧠 Conclusión  
+### Conclusión  
 
 El sistema evidencia un **punto de saturación temprano**: con **2 workers** alcanza el máximo rendimiento sostenible (≈ **3.4 videos/min para 50 MB**), mientras que cualquier intento de escalar más allá provoca inestabilidad y caída del servicio.  
 A pesar de la reducción intencional de recursos, el *worker* mantiene un comportamiento controlado y confirma la **importancia de dimensionar la infraestructura** según la carga esperada.
