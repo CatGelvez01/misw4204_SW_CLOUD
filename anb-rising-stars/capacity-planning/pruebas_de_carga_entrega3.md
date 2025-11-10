@@ -97,16 +97,51 @@ Este resultado confirma una **saturación total de la capa web**, afectando la d
 
 <img width="975" height="47" alt="image" src="https://github.com/user-attachments/assets/f9a8e522-c833-4fd9-a6ed-02f7cf21f23c" />
 
-**Figura 7.** Resultado JMeter – 10000 usuarios
+**Figura 8.** Resultado JMeter – 10000 usuarios
+
+## Tabla Resumen de Resultados – Entrega 3 (Carga Web en la Nube)
+
+| Usuarios Concurrentes | # Muestras | Media (ms) | % Error | Rendimiento (RPS) |
+|------------------------|------------|-------------|----------|-------------------|
+| 100   | 100   | 760    | 0.00 %  | 0.56/sec |
+| 500   | 500   | 790    | 0.00 %  | 2.8/sec   |
+| 1000  | 1000  | 781    | 0.00 %  | 5.5/sec   |
+| 3000  | 3000  | 36,356 | 0.00 %  | 12.5/sec  |
+| 5000  | 5000  | 77,150 | 38.20 % | 9.8/sec   |
+| 7000  | 7000  | 87,019 | 58.66 % | 13.1/sec  |
+| 10,000| 10,000| 83,814 | 68.31 % | 17.6/sec  |
+
+### Análisis Comparativo de Ejecución Local, Nube Básica y Nube Escalable
+
+A partir de los resultados obtenidos, se puede realizar una comparación entre los tres entornos de despliegue: **ejecución local**, **nube básica** y **nube escalable**. 
+
+En el **tiempo promedio de respuesta**, se observa que bajo cargas bajas (hasta 3000 usuarios), tanto la ejecución local como la nube básica mantienen tiempos similares, demostrando estabilidad en el procesamiento de solicitudes. Sin embargo, a partir de los 4000 usuarios, el entorno en la nube escalable presenta un aumento considerable en los tiempos de respuesta, alcanzando valores por encima de los 80,000 ms con 7000 usuarios. Sugiriendo que el despliegue en la nube escalable puede tener latencia adicional debido al balanceo de carga y autoscaling implementado. A partir de los resultados obtenido aparentemente el despliegue sencillo en la nube tiene un menor tiempo de respuesta promedio
+
+<img width="752" height="452" alt="image" src="https://github.com/user-attachments/assets/07f5028d-892a-4ca2-9543-88509f00bbfc" />
+
+**Figura 9.** Tiempo de respuesta en ejecución local, nube básica y nube escalable.  
 
 
+En cuanto al **porcentaje de error**, se evidencia que tanto el entorno local como el de nube básica mantienen un **0 % de error** hasta aproximadamente los **5000 usuarios**, demostrando un buen manejo de concurrencia. A partir de este punto, el entorno de nube básica empieza a registrar fallos, llegando alrededor del **58 % de error con 10,000 usuarios**. Por su parte, la nube escalable comienza a presentar errores incluso antes, alcanzando un **38.2 % con 5000 usuarios** y hasta un **68.31 % con 10,000 usuarios**, lo que evidencia posibles dificultades en el proceso de distribución de carga o límites en los recursos configurados por instancia.
+
+<img width="752" height="452" alt="image" src="https://github.com/user-attachments/assets/b3803cb7-6173-4635-a4b3-d9b4d5baa2c4" />
+
+**Figura 10.** % de error en ejecución local, nube básica y nube escalable.  
 
 
+Finalmente, al analizar el **rendimiento (RPS)**, se aprecia que en los primeros niveles de carga, tanto la nube básica como la ejecución local presentan un comportamiento muy similar, con incrementos proporcionales al número de usuarios. Sin embargo, a medida que la carga aumenta, el rendimiento de la nube escalable se mantiene por debajo de los otros entornos, lo que indica una menor eficiencia en la gestión de solicitudes concurrentes. 
+El entorno de **nube básica** logra mantener un rendimiento más estable, alcanzando un máximo de **29.40 RPS con 10,000 usuarios**.
 
+<img width="752" height="452" alt="image" src="https://github.com/user-attachments/assets/1ba31a8f-c4cc-4379-b96b-ecd2c4e2c5b3" />
 
+**Figura 11.** Rendimiento (RPS) en ejecución local, nube básica y nube escalable.  
 
+---
 
+### Conclusiones
 
+- La **nube escalable**, aunque diseñada para manejar más usuarios, presenta un desempeño inferior en tiempos de respuesta y estabilidad, lo que sugiere que el esquema de escalado requiere ajustes o una configuración más robusta, comparado con los resultados del despliegue sencillo en la nube y ejecucion local.
+- Comparado con la experimentacion Anterior, los despliegues locales y sencillo en la nube ofrecieron un mejor rendimiento en tiempo de respuesta promedio y RPS comparado al despliegue con balanceador de carga implementado en la Entrega 3. Como mejora se propone evaluar los recursos del balanceador de carga con el fin de mejorar la arquitectura propuesta 
 
 ---
 
