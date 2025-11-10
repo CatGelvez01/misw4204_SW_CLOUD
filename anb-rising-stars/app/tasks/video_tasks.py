@@ -4,8 +4,10 @@ Video processing tasks for Celery.
 
 from celery import shared_task
 from app.core.database import SessionLocal
+from app.core.config import settings
 from app.models import Video, VideoStatus
 from app.services.video_processor import VideoProcessor
+from app.services.s3_storage import S3Storage
 from datetime import datetime, timezone
 import logging
 
@@ -42,6 +44,19 @@ def process_video_task(self, video_id):
         processor = VideoProcessor()
         processed_path = processor.process_video(video.original_path, video_id)
 
+        # Upload to S3 if enabled
+        if settings.use_s3:
+            try:
+                s3_storage = S3Storage()
+                s3_key = s3_storage.upload_video(
+                    processed_path, video_id, prefix=settings.s3_processed_prefix
+                )
+                processed_path = s3_key
+                logger.info(f"Uploaded processed video to S3: {s3_key}")
+            except Exception as e:
+                logger.error(f"Error uploading processed video to S3: {str(e)}")
+                raise
+
         # Update video record
         video.processed_path = processed_path
         video.status = VideoStatus.PROCESSED
@@ -51,7 +66,7 @@ def process_video_task(self, video_id):
         logger.info(f"Video {video_id} processed successfully")
         return {"status": "success", "video_id": video_id}
 
-    except Exception as exc:
+    except (RuntimeError, OSError, IOError) as exc:
         logger.error(f"Error processing video {video_id}: {str(exc)}")
 
         # Update video status to failed

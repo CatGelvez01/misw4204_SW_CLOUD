@@ -11,8 +11,8 @@ class UserRegister(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
     email: EmailStr
-    password1: str = Field(..., min_length=8)
-    password2: str = Field(..., min_length=8)
+    password1: str = Field(..., min_length=8, max_length=255)
+    password2: str = Field(..., min_length=8, max_length=255)
     city: str = Field(..., min_length=1, max_length=100)
     country: str = Field(..., min_length=1, max_length=100)
 
@@ -34,7 +34,7 @@ class UserLogin(BaseModel):
     """Schema for user login."""
 
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=8, max_length=255)
 
     class Config:
         json_schema_extra = {

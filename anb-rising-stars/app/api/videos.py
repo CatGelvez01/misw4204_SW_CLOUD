@@ -2,14 +2,18 @@
 Video management endpoints.
 """
 
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 import os
 from uuid import uuid4
 import re
 from app.core.database import get_db
 from app.core.config import settings
 from app.models import User, Video, VideoStatus
+from app.services.s3_storage import S3Storage
+
 from app.schemas import (
     VideoResponse,
     VideoDetailResponse,
@@ -25,6 +29,7 @@ from app.api.dependencies import get_current_user
 from app.tasks.video_tasks import process_video_task
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -99,7 +104,7 @@ async def list_my_videos(
         processed_url = None
         if video.status == VideoStatus.PROCESSED and video.processed_path:
             filename = os.path.basename(video.processed_path)
-            processed_url = f"http://localhost:8080/processed/{filename}"
+            processed_url = f"{settings.server_url}/processed/{filename}"
 
         video_dict = {
             "video_id": str(video.id),
@@ -167,16 +172,36 @@ async def get_video_detail(
             detail="No tienes permiso para acceder a este video.",
         )
 
-    # Convert filesystem paths to HTTP URLs
+    # Convert paths to URLs
     original_url = None
     if video.original_path:
-        filename = os.path.basename(video.original_path)
-        original_url = f"http://localhost:8080/uploads/{filename}"
+        if settings.use_s3:
+            # Generate public URL for S3
+            try:
+                s3_storage = S3Storage()
+                original_url = f"https://{s3_storage.bucket}.s3.amazonaws.com/{video.original_path}"
+            except Exception as e:
+                logger.error(f"Error generating S3 URL: {str(e)}")
+                original_url = None
+        else:
+            # Local storage URL
+            filename = os.path.basename(video.original_path)
+            original_url = f"{settings.server_url}/uploads/{filename}"
 
     processed_url = None
     if video.status == VideoStatus.PROCESSED and video.processed_path:
-        filename = os.path.basename(video.processed_path)
-        processed_url = f"http://localhost:8080/processed/{filename}"
+        if settings.use_s3:
+            # Generate public URL for S3
+            try:
+                s3_storage = S3Storage()
+                processed_url = f"https://{s3_storage.bucket}.s3.amazonaws.com/{video.processed_path}"
+            except Exception as e:
+                logger.error(f"Error generating S3 URL: {str(e)}")
+                processed_url = None
+        else:
+            # Local storage URL
+            filename = os.path.basename(video.processed_path)
+            processed_url = f"{settings.server_url}/processed/{filename}"
 
     return {
         "video_id": str(video.id),
@@ -254,11 +279,29 @@ async def delete_video(
         )
 
     # Delete files
-    if os.path.exists(video.original_path):
-        os.remove(video.original_path)
+    if settings.use_s3:
+        try:
+            s3_storage = S3Storage()
+            # Delete original video
+            if video.original_path:
+                s3_storage.delete_video(
+                    str(video.id), prefix=settings.s3_original_prefix
+                )
+            # Delete processed video if exists
+            if video.processed_path:
+                s3_storage.delete_video(
+                    str(video.id), prefix=settings.s3_processed_prefix
+                )
+        except Exception as e:
+            logger.error(f"Error deleting videos from S3: {str(e)}")
+            # Continue with database deletion even if S3 deletion fails
+    else:
+        # Local storage deletion
+        if os.path.exists(video.original_path):
+            os.remove(video.original_path)
 
-    if video.processed_path and os.path.exists(video.processed_path):
-        os.remove(video.processed_path)
+        if video.processed_path and os.path.exists(video.processed_path):
+            os.remove(video.processed_path)
 
     # Delete from database
     db.delete(video)

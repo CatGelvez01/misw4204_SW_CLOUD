@@ -69,3 +69,6 @@ logs/
 
 # Docker
 .dockerignore
+
+# Zone Identifier files (Windows/macOS metadata)
+*.Identifier
