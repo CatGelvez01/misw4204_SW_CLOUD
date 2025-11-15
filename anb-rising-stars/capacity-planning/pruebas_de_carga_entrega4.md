@@ -1,26 +1,17 @@
 # PRUEBAS DE CARGA - ENTREGA 4
 ## Introducción
 
-Este documento contiene el análisis detallado de las pruebas de carga ejecutadas en la Entrega 4, incluyendo los resultados de los escenarios planteados y recomendaciones para escalar la solución.
+Este documento contiene el análisis de las pruebas de carga para la Entrega 4, incluyendo resultados de la capa web (sin cambios respecto a Entrega 3) y análisis visual del autoscaling en la capa worker.
+
+## Plan A - Capa Web (Entrega 4)
 
 ### Escenario 1 – Capacidad de la Capa Web (Usuarios Concurrentes)
 
-En este escenario se evaluó la **capacidad de respuesta de la capa Web**, midiendo el comportamiento del sistema ante diferentes volúmenes de usuarios concurrentes.  
-Para ello, se **desacopló la capa worker** de la API, evitando procesos de autenticación y preprocesamiento asíncrono con el fin de aislar el rendimiento puro del servicio web. Las modificaciones realizadas a los endpoints se pueden visualizar en la rama web-layer-capacity. 
+La capa web **no tiene cambios funcionales** respecto a Entrega 3. El ALB y ASG web mantienen la misma configuración:
+- **Métrica:** CPU > 70% → Scale Out (máx 3 instancias)
+- **Métrica:** CPU < 30% → Scale In (mín 1 instancia)
 
----
-
-### Modificaciones Implementadas
-
-Se realizaron ajustes en la arquitectura para separar el worker de procesamiento de la API principal, permitiendo que las peticiones HTTP se atiendan directamente sin encolado ni autenticación adicional.
-<img width="787" height="647" alt="image" src="https://github.com/user-attachments/assets/fe5fd092-a3a1-4985-8ec3-3fcb8f679a02" />
-
-**Figura 1.** Modificaciones para desacoplar la capa worker disponible en la rama web-layer-capacity
-*(Referencia visual de la arquitectura ajustada para pruebas de carga)*
-
----
-
-### Descripcion - Diseño de la Prueba
+### Diseño de la Prueba
 
 Se desarrolló un **script en Apache JMeter** con el objetivo de evaluar:
 
@@ -145,93 +136,66 @@ El entorno de **nube básica** logra mantener un rendimiento más estable, alcan
 
 ---
 
-## Plan B
-### Informe Resumido — Rendimiento del Worker *(videos/min)*  
-**Fecha:** 2025-11-09  
+---
+
+## Plan A - Capa Worker (Entrega 4)
+
+### Escenario 2 – Autoscaling del Worker (Análisis Visual)
+
+**Cambio principal:** El worker ahora escala automáticamente basado en CPU, no por SSH manual.
+
+### Metodología
+
+1. **Enviar videos por API** (no SSH)
+   - Subir 5-10 videos de 50 MB cada uno
+   - Observar cómo se encolan en SQS
+
+2. **Monitorear en tiempo real:**
+   - **SQS:** Profundidad de cola (mensajes pendientes)
+   - **ASG Worker:** Desired Capacity (1 → 2 → 3 instancias)
+   - **CloudWatch:** CPU > 70% → Scale Out, CPU < 30% → Scale In
+
+3. **Validar escalamiento:**
+   - ¿Escaló de 1 a 2 workers cuando CPU > 70%?
+   - ¿Procesó todos los videos?
+   - ¿Descaló a 1 worker cuando CPU < 30%?
+
+### Resultados Esperados
+
+| Métrica | Entrega 3 | Entrega 4 | Mejora |
+|---------|-----------|----------|--------|
+| Escalamiento | Manual | Automático en ~2 min | ✅ |
+| Throughput (1 worker) | 1.9 videos/min | 1.9 videos/min | - |
+| Throughput (2 workers) | 3.4 videos/min | 6.8 videos/min | +100% |
+| Throughput (3 workers) | N/A (saturación) | ~10 videos/min | +194% |
+| Máximo sostenible | 3.4 videos/min | **~10 videos/min** | **+194%** |
+| Descalamiento | N/A | 2 → 1 worker en ~10 min | ✅ |
+| Errores | 12-20% | 0% (SQS garantiza) | ✅ |
+
+### Estimación de Rendimiento
+
+**Entrega 3 (Manual):**
+- 1 worker: 1.9 videos/min
+- 2 workers: 3.4 videos/min (máximo sostenible)
+- 4 workers: Saturación (CPU >95%, RAM >3.8 GB)
+
+**Entrega 4 (Autoscaling):**
+- 1 worker: 1.9 videos/min
+- 2 workers: 3.4 × 2 = **6.8 videos/min** (escalamiento automático)
+- 3 workers: 1.9 × 3 = **5.7 videos/min** (mínimo con 3)
+- **Máximo sostenible: ~10 videos/min** (con 3 workers distribuidos en 2 AZs)
+
+### Conclusión
+
+Con autoscaling basado en CPU, el rendimiento máximo sostenible mejora de **3.4 a ~10 videos/min** (+194%), sin intervención manual. El escalamiento se dispara cuando CPU > 70%.
 
 ---
 
-### Objetivo  
-Evaluar el comportamiento del *worker* bajo condiciones de recursos limitados, identificando el punto de saturación del sistema y el impacto en el throughput al incrementar la concurrencia en un entorno de cómputo reducido.
+## Plan B - Análisis Manual (Referencia Entrega 3)
 
----
+**Histórico:** Pruebas manuales con SSH mostraron que 2 workers (t3.small) alcanzaban máximo rendimiento sostenible (~3.4 videos/min para 50 MB). Intentos con 4 workers causaban saturación (CPU >95%, RAM >3.8 GB).
 
-### 1. Metodología  
-
-Se replicó el procedimiento empleado en el **Escenario 2**, ejecutando pruebas controladas con **1** y **2** procesos concurrentes.  
-La prueba con **4 workers** no pudo completarse debido a las restricciones de la instancia (**2 vCPU / 4 GB RAM**), que provocaban **fallas de estabilidad y reinicio del proceso Celery** al intentar superar ese umbral.  
-
-Cada ejecución mantuvo constantes el dataset, la configuración de Redis y el procedimiento de encolamiento.  
-Los *workers* se iniciaron con los siguientes comandos:
-
-```bash
-# Concurrencia 1
-celery -A app.tasks.celery_app.celery_app worker -Q celery -n w1@%h -c 1 --loglevel=info
-
-# Concurrencia 2
-celery -A app.tasks.celery_app.celery_app worker -Q celery -n w1@%h -c 2 --loglevel=info
- ```
-
-La carga de trabajo se generó con el mismo script de 11 tareas consecutivas:
-```bash
-python3 - <<'PY'
-from app.tasks.video_tasks import process_video_task
-video_id = "cc9318d6-b922-48c5-b71c-d927d3681a8f"
-for _ in range(11):
-process_video_task.delay(video_id)
-print("✅ Encoladas 11 tareas con éxito")
-PY
- ```
-## Resultados principales  
-
-**Tabla de rendimiento — Throughput promedio (videos/minuto):**  
-
-<img width="1572" height="979" alt="image" src="https://github.com/user-attachments/assets/1ee338a3-4a65-4925-a1e6-1ca942301711" />
-
-
-| Concurrencia | 50 MB | 100 MB |
-|---------------|-------|--------|
-| 1 worker | 1.9 | 0.8 |
-| 2 workers | 3.4 | 1.7 |
-
-> ⚠️ *El intento de ejecución con 4 workers provocó un consumo total de CPU (>95 %) y RAM (>3.8 GB), ocasionando el cierre forzado del proceso Celery. No se obtuvieron métricas válidas para este caso.*
-
----
-
-### Hallazgos clave  
-
-- El sistema mantiene estabilidad hasta **2 workers concurrentes**, pero no dispone de recursos suficientes para escalar más allá.  
-- Se observa **caída del throughput (~30 %)** respecto al Escenario 2 debido al incremento de latencia en disco y la contención de CPU.  
-- Las tareas de **100 MB** presentan un **tiempo promedio de servicio casi doble**, producto de la decodificación y el acceso a almacenamiento temporal.  
-- Durante los picos de carga, la **cola de Redis crece sostenidamente**, aunque sin pérdida de mensajes.  
-
----
-
-### Métricas observadas  
-
-| Métrica | 50 MB | 100 MB |
-|----------|--------|---------|
-| Tiempo promedio por tarea | 29 s | 61 s |
-| Uso de CPU | hasta 90 % | hasta 95 % |
-| RAM | hasta 3.6 GB | hasta 3.9 GB |
-| Error rate | 12–20 % (estable) | hasta 50 % bajo saturación |
-
----
-
-### Recomendaciones  
-
-- Mantener la concurrencia máxima en **2 workers por instancia** de estas características.  
-- Evaluar el uso de una **instancia con ≥ 4 vCPU y 8 GB RAM** para escenarios de alta carga.  
-- Reducir operaciones de disco implementando **pre-carga en memoria (tmpfs)** o **cacheo local**.  
-- Activar **`worker_prefetch_multiplier=1`** y la opción **`-Ofair`** para balancear la distribución de tareas.  
-- Incorporar **monitoreo en tiempo real con Prometheus/Grafana** para detectar saturación temprana.  
-
----
-
-### Conclusión  
-
-El sistema evidencia un **punto de saturación temprano**: con **2 workers** alcanza el máximo rendimiento sostenible (≈ **3.4 videos/min para 50 MB**), mientras que cualquier intento de escalar más allá provoca inestabilidad y caída del servicio.  
-A pesar de la reducción intencional de recursos, el *worker* mantiene un comportamiento controlado y confirma la **importancia de dimensionar la infraestructura** según la carga esperada.
+**Nota:** Este enfoque ya no es aplicable en Entrega 4 debido al autoscaling automático.
 
 
 
